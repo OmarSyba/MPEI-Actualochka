@@ -9,9 +9,11 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
+#include <QVector>
 
 #include <QSystemTrayIcon>
 
+#include <QApplication>
 #include <QTimer>
 
 #include "../General/general.hpp"
@@ -34,6 +36,11 @@ public:
 public slots:
     void onActivated(QSystemTrayIcon::ActivationReason reason);
     void MessageClicked();
+public:
+    void SetToolTipTime();
+
+signals:
+    void ForceClose();
 
 private slots:
     void onResult(QNetworkReply *reply);
@@ -58,8 +65,15 @@ private:
 
     SConfig *config = nullptr;
     QSystemTrayIcon *tIcon = nullptr;
+
     QTimer *timer = nullptr;
+    QTimer *toolTipPpdater = nullptr;
 
     QJsonObject *configJson = nullptr;
+    QMenu *context = nullptr;
+    QVector<QAction *> actions;
+
+    QTime time;
+
 };
 #endif // MAINWINDOW_HPP

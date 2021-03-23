@@ -4,6 +4,7 @@
 #include <QThread>
 #include <QCheckBox>
 #include <QSettings>
+#include <QDesktopServices>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -25,6 +26,11 @@ MainWindow::~MainWindow()
 {
     config->WriteJson(config->GetJson());
 
+    for (auto& x : this->actions)
+    {
+        delete x;
+    }
+    delete context;
     delete tIcon;
     delete timer;
     delete config;
@@ -44,11 +50,14 @@ void MainWindow::InitParams()
 
 void MainWindow::onActivated(QSystemTrayIcon::ActivationReason reason)
 {
-    QSystemTrayIcon::MessageIcon icon = QSystemTrayIcon::MessageIcon(QSystemTrayIcon::Information);
-
+    if (reason == QSystemTrayIcon::Context)
+    {
+        tIcon->setContextMenu(context);
+    }
     if (reason == QSystemTrayIcon::Unknown)
     {
-        tIcon->showMessage(QString("Актуалочка"), content, icon, 1000000);
+        QSystemTrayIcon::MessageIcon icon = QSystemTrayIcon::MessageIcon(QSystemTrayIcon::Information);
+        tIcon->showMessage(QString("Актуалочка"), content, icon);
         ui->textEdit->setText(content);
     }
     else if (reason == QSystemTrayIcon::Trigger)
@@ -64,6 +73,27 @@ void MainWindow::MessageClicked()
     InitParams();
 }
 
+void MainWindow::SetToolTipTime()
+{
+    uint64_t remaingTime = timer->remainingTime() / 60000;
+    QString suffix = "минут";
+
+    if (remaingTime > 60)
+    {
+        remaingTime /= 60;
+        suffix = "часов";
+    }
+
+    if (tIcon)
+    {
+
+        tIcon->setToolTip(QString::number(
+            remaingTime) == QString::number(0) ?
+            "Осталось " + QString::number(config->GetInterval() / (60 * 1000 * 60)) + " " + "часов" :
+            "Осталось " + QString::number(remaingTime) + " " + suffix
+            );
+    }
+}
 
 void MainWindow::onResult(QNetworkReply *reply)
 {
@@ -125,13 +155,43 @@ inline void MainWindow::SetUpTimer()
 
     timer->setInterval(1);
     timer->start();
+
+    toolTipPpdater = new QTimer(this);
+    toolTipPpdater->setInterval(60 * 1000);
+
+    toolTipPpdater->start();
+
+    connect(toolTipPpdater, &QTimer::timeout, this, &MainWindow::SetToolTipTime);
     connect(timer, &QTimer::timeout, this, &MainWindow::notify);
+
+    SetToolTipTime();
 }
 
 inline void MainWindow::SetUpSystemTrayIcon()
 {
     tIcon = new QSystemTrayIcon();
     tIcon->setIcon(QIcon(":/icon/favicon.ico"));
+
+    context = new QMenu();
+    QAction *exit = new QAction(context);
+    QAction *reference = new QAction(context);
+
+    exit->setText(tr("Выход"));
+    reference->setText(tr("Получить обновление вк"));
+
+    context->addAction(reference);
+    context->addSeparator();
+    context->addAction(exit);
+
+    connect(exit, &QAction::triggered, this, [&](){
+        emit ForceClose();
+    });
+
+    connect(reference, &QAction::triggered, this, [&](){
+        QDesktopServices::openUrl(QUrl("https://vk.com/mpei_memez?w=app5748831_-201318787"));
+    });
+
+    actions.append(exit);
 }
 
 void MainWindow::SetUpConfig()
