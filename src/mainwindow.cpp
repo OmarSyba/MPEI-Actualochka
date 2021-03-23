@@ -11,21 +11,16 @@ MainWindow::MainWindow(QWidget *parent)
 
     setWindowTitle("Актуалочка");
 
-    tIcon = new QSystemTrayIcon();
-    timer = new QTimer(this);
-
-    timer->setInterval(1);
-    timer->start();
-    connect(timer, &QTimer::timeout, this, &MainWindow::Emmitier);
-
-    tIcon->setIcon(QIcon(":/icon/favicon.ico"));
+    SetUpTimer();
+    SetUpSystemTrayIcon();
+    SetUpConfig();
 }
 
 MainWindow::~MainWindow()
 {
     delete tIcon;
     delete timer;
-
+    delete config;
     delete ui;
 }
 
@@ -33,8 +28,6 @@ void MainWindow::onActivated(QSystemTrayIcon::ActivationReason reason)
 {
     QSystemTrayIcon::MessageIcon icon = QSystemTrayIcon::MessageIcon(QSystemTrayIcon::Information);
     tIcon->showMessage(QString("Актуалочка"), content, icon, 1000000);
-
-    qDebug() << content;
 }
 
 
@@ -58,7 +51,7 @@ void MainWindow::onResult(QNetworkReply *reply)
     }
 }
 
-void MainWindow::Emmitier()
+void MainWindow::notify()
 {
     QNetworkAccessManager* nam = new QNetworkAccessManager(this);
 
@@ -68,4 +61,30 @@ void MainWindow::Emmitier()
     connect(nam, SIGNAL(finished(QNetworkReply *)), this, SLOT(onResult(QNetworkReply *)));
 
     timer->setInterval(act::interval);
+}
+
+inline void MainWindow::SetUpTimer()
+{
+    timer = new QTimer(this);
+
+    timer->setInterval(1);
+    timer->start();
+    connect(timer, &QTimer::timeout, this, &MainWindow::notify);
+
+}
+
+inline void MainWindow::SetUpSystemTrayIcon()
+{
+    tIcon = new QSystemTrayIcon();
+    tIcon->setIcon(QIcon(":/icon/favicon.ico"));
+}
+
+void MainWindow::SetUpConfig()
+{
+    config = new SConfig();
+    configJson = config->OpenConfigJson();
+
+    config->HandleConfigJson(config->GetJson());
+    config->SetAutoRun(false);
+    config->WriteJson(config->GetJson());
 }

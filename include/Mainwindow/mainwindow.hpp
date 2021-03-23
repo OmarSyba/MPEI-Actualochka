@@ -15,6 +15,7 @@
 #include <QTimer>
 
 #include "../General/general.hpp"
+#include "../General/confighandler.hpp"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -33,14 +34,21 @@ public slots:
 
 private slots:
     void onResult(QNetworkReply *reply);
-    void Emmitier();
+    void notify();
+
+private:
+    inline void SetUpTimer();
+    inline void SetUpSystemTrayIcon();
+    inline void SetUpConfig();
 
 private:
     QString content;
-
     Ui::MainWindow *ui;
 
+    SConfig *config = nullptr;
     QSystemTrayIcon *tIcon = nullptr;
     QTimer *timer = nullptr;
+
+    QJsonObject *configJson = nullptr;
 };
 #endif // MAINWINDOW_HPP
