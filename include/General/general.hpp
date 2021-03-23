@@ -10,6 +10,7 @@ namespace act
     static uint32_t interval = 28800000;
 
     static QString configPath = QDir::currentPath() + "/config.json";
+    static QString AppName = "Actualochka";
 }
 
 #endif // GENERAL_HPP

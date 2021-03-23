@@ -16,6 +16,7 @@ public:
     void WriteJson(QJsonObject *jsonObject);
 
     bool isFirstRun() const noexcept;
+    bool isAutoRunEnable() const;
     uint32_t GetRunsCount() const noexcept;
 
     void SetAutoRun(bool run);

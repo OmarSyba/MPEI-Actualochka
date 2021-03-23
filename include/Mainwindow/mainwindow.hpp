@@ -29,12 +29,23 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+    void InitParams();
+
 public slots:
     void onActivated(QSystemTrayIcon::ActivationReason reason);
+    void MessageClicked();
 
 private slots:
     void onResult(QNetworkReply *reply);
+    void onResultWithOutTray(QNetworkReply *reply);
+
     void notify();
+    void notifyWithOutTray();
+
+    void on_checkBox_stateChanged(int arg1);
+    void on_spinBox_valueChanged(int arg1);
+
+    void on_pushButton_clicked();
 
 private:
     inline void SetUpTimer();

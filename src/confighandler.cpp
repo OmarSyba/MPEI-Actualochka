@@ -21,15 +21,17 @@ QJsonObject *SConfig::OpenConfigJson()
         //TODO
     }
 
-    if (file.pos() == 0)
-    {
-        qDebug() << "Here";
-    }
-
     QByteArray saveData = file.readAll();
     QJsonDocument jsonDocument = QJsonDocument::fromJson(saveData);
 
     _jsonObject = new QJsonObject(jsonDocument.object());
+
+    if (file.pos() == 0)
+    {
+        (*_jsonObject)["runs"] = 1;
+        (*_jsonObject)["interval"] = (int)act::interval;
+        (*_jsonObject)["autorun"] = false;
+    }
 
     file.close();
     return _jsonObject;
@@ -44,7 +46,15 @@ void SConfig::HandleConfigJson(QJsonObject *jsonObject)
 
     _appRuns = (*jsonObject)["runs"].toInt();
     _interval = (*jsonObject)["interval"].toInt();
-    _autoRun = (*jsonObject)["autorun"].isBool();
+    _autoRun = (*jsonObject)["autorun"].toBool();
+
+    //qDebug() << (*jsonObject)["autorun"].toBool() << (*jsonObject)["autorun"];
+
+    if (_appRuns == 1)
+    {
+        _interval = act::interval;
+        _autoRun = false;
+    }
 }
 
 void SConfig::WriteJson(QJsonObject *jsonObject)
@@ -53,7 +63,6 @@ void SConfig::WriteJson(QJsonObject *jsonObject)
     {
         return;
     }
-
     (*jsonObject)["runs"] = (int)_appRuns + 1;
     (*jsonObject)["interval"] = (int)_interval;
     (*jsonObject)["autorun"] = _autoRun;
@@ -73,14 +82,19 @@ bool SConfig::isFirstRun() const noexcept
     return !(*_jsonObject)["runs"].toInt();
 }
 
+bool SConfig::isAutoRunEnable() const
+{
+    return _autoRun;
+}
+
 void SConfig::SetAutoRun(bool run)
 {
-    (*_jsonObject)["autorun"] = (int)run;
+    _autoRun = run;
 }
 
 void SConfig::SetInterval(uint32_t ms)
 {
-    (*_jsonObject)["interval"] = (int)ms;
+    _interval = (int)ms;
 }
 
 void SConfig::SetUrl(QString &url)
@@ -95,7 +109,7 @@ QString SConfig::GetUrl() const noexcept
 
 uint32_t SConfig::GetInterval() const noexcept
 {
-    return (*_jsonObject)["interval"].toInteger();
+    return _interval;
 }
 
 QJsonObject *SConfig::GetJson() const
