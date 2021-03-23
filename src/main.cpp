@@ -8,5 +8,7 @@ int main(int argc, char *argv[])
     a.setApplicationName("Actualochka Getter");
     MainWindow w;
 
+    a.setQuitOnLastWindowClosed(false);
+
     return a.exec();
 }
