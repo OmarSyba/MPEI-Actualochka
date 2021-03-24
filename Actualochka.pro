@@ -12,13 +12,15 @@ SOURCES += \
     src/confighandler.cpp \
     src/main.cpp \
     src/mainwindow.cpp \
+    src/networreplyer.cpp \
     src/serverjsonparser.cpp
 
 HEADERS += \
     include/General/general.hpp \
     include/Mainwindow/mainwindow.hpp \
     include/General/confighandler.hpp \
-    include/Receiver/serverjsonparser.hpp
+    include/Receiver/serverjsonparser.hpp \
+    include/Receiver/networreplyer.hpp
 
 FORMS += \
     ui/mainwindow.ui
@@ -29,7 +31,7 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 RESOURCES += \
-    src/res.qrc
+    resources//res.qrc
 
 
 RC_ICONS = favicon.ico

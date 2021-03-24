@@ -19,8 +19,8 @@ class ServerJsonParser : public QObject
     Q_OBJECT
 public:
     ServerJsonParser() = delete;
-
     static QVector<QString> ParseJsonFromServer(QNetworkReply *reply, IEType type);
+
 private:
     static QVector<QString> ParseJson(QJsonArray& tjsonArray);
 };

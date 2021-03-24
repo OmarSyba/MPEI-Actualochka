@@ -2,16 +2,13 @@
 #define MAINWINDOW_HPP
 
 #include <QMainWindow>
-#include <QVector>
-
 #include <QSystemTrayIcon>
-
-#include <QApplication>
 #include <QTimer>
 
 #include "../General/general.hpp"
 #include "../General/confighandler.hpp"
 #include "../Receiver/serverjsonparser.hpp"
+#include "../Receiver/networreplyer.hpp"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }

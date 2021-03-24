@@ -18,11 +18,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(ui->UpdateButton, &QPushButton::clicked, this, [&]()
     {
-        QNetworkAccessManager* nam = new QNetworkAccessManager(this);
-
-        QUrl url(act::MpeiActuallity);
-        nam->get(QNetworkRequest(url));
-
+        auto nam = NetworReplyer::AccessUrl(act::MpeiActuallity);
         connect(nam, SIGNAL(finished(QNetworkReply*)), this, SLOT(onResultWithOutTray(QNetworkReply*)));
     });
 }
@@ -49,6 +45,8 @@ void MainWindow::InitParams()
 
     ui->tabWidget->setTabText(0, tr("Информация"));
     ui->tabWidget->setTabText(1, tr("Настройки"));
+    ui->tabWidget->setTabText(2, tr("Календарь"));
+    ui->tabWidget->setCurrentIndex(0);
 
     auto time = ((config->GetInterval() / 1000)/ 60) / 60;
     if (ui->spinBox)
@@ -93,7 +91,6 @@ void MainWindow::onActivatedSetSchedule()
         {
             ui->textEditShedule->setText(x);
         }
-
     }
 }
 
@@ -175,13 +172,8 @@ inline void MainWindow::SetUpTimer()
     connect(toolTipPpdater, &QTimer::timeout, this, &MainWindow::SetToolTipTime);
     connect(timer, &QTimer::timeout, this, [=]()
     {
-        QNetworkAccessManager* namA = new QNetworkAccessManager(this);
-        QUrl urlA(act::MpeiActuallity);
-        namA->get(QNetworkRequest(urlA));
-
-        QNetworkAccessManager* namS = new QNetworkAccessManager(this);
-        QUrl urlS(act::MpeiSchedule);
-        namS->get(QNetworkRequest(urlS));
+        auto namA = NetworReplyer::AccessUrl(act::MpeiActuallity);
+        auto namS = NetworReplyer::AccessUrl(act::MpeiSchedule);
 
         connect(namA, SIGNAL(finished(QNetworkReply*)), this, SLOT(onResultActually(QNetworkReply*)));
         connect(namS, SIGNAL(finished(QNetworkReply*)), this, SLOT(onResultSchedule(QNetworkReply*)));
