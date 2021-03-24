@@ -12,17 +12,19 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
-    setWindowTitle("Актуалочка");
-    setFixedSize(QSize(640, 480));
-
-    ui->tabWidget->setTabText(0, tr("Информация"));
-    ui->tabWidget->setTabText(1, tr("Настройки"));
-
     SetUpSystemTrayIcon();
     SetUpConfig();
     SetUpTimer();
 
-    connect(ui->UpdateButton, &QPushButton::clicked, this, &MainWindow::notifyWithOutTray);
+    connect(ui->UpdateButton, &QPushButton::clicked, this, [&]()
+    {
+        QNetworkAccessManager* nam = new QNetworkAccessManager(this);
+
+        QUrl url(act::mpei_url);
+        QNetworkReply* reply = nam->get(QNetworkRequest(url));
+
+        connect(nam, SIGNAL(finished(QNetworkReply*)), this, SLOT(onResultWithOutTray(QNetworkReply*)));
+    });
 }
 
 MainWindow::~MainWindow()
@@ -42,6 +44,12 @@ MainWindow::~MainWindow()
 
 void MainWindow::InitParams()
 {
+    setWindowTitle("Актуалочка");
+    setFixedSize(QSize(640, 480));
+
+    ui->tabWidget->setTabText(0, tr("Информация"));
+    ui->tabWidget->setTabText(1, tr("Настройки"));
+
     auto time = ((config->GetInterval() / 1000)/ 60) / 60;
     if (ui->spinBox)
         ui->spinBox->setValue(time);
@@ -53,20 +61,25 @@ void MainWindow::InitParams()
 
 void MainWindow::onActivated(QSystemTrayIcon::ActivationReason reason)
 {
-    if (reason == QSystemTrayIcon::Context)
+    switch (reason)
     {
+    case QSystemTrayIcon::MiddleClick:
+    case QSystemTrayIcon::DoubleClick:
+        break;
+    case QSystemTrayIcon::Context:
         tIcon->setContextMenu(context);
-    }
-    if (reason == QSystemTrayIcon::Unknown)
-    {
+        break;
+
+    case QSystemTrayIcon::Trigger:
+        this->show();
+        InitParams();
+        break;
+
+    case QSystemTrayIcon::Unknown:
         QSystemTrayIcon::MessageIcon icon = QSystemTrayIcon::MessageIcon(QSystemTrayIcon::NoIcon);
         tIcon->showMessage(QString("Актуалочка"), content, icon);
         ui->textEdit->setText(content);
-    }
-    else if (reason == QSystemTrayIcon::Trigger)
-    {
-        this->show();
-        InitParams();
+        break;
     }
 }
 
@@ -108,14 +121,14 @@ void MainWindow::onResult(QNetworkReply *reply)
         QJsonObject jsonObject = jsonResponse.object();
 
         content = jsonObject["actuality"].toObject()["content"].toString();
-
-        tIcon->setVisible(true);
-        this->onActivated(QSystemTrayIcon::Unknown);
     }
     else
     {
-        qDebug() << "ERROR";
+        content = reply->errorString();
     }
+
+    tIcon->setVisible(true);
+    this->onActivated(QSystemTrayIcon::Unknown);
 }
 
 void MainWindow::onResultWithOutTray(QNetworkReply *reply)
@@ -130,27 +143,6 @@ void MainWindow::onResultWithOutTray(QNetworkReply *reply)
     ui->textEdit->setText(content);
 }
 
-void MainWindow::notify()
-{
-    QNetworkAccessManager* nam = new QNetworkAccessManager(this);
-
-    QUrl url(act::mpei_url);
-    QNetworkReply* reply = nam->get(QNetworkRequest(url));
-
-    connect(nam, SIGNAL(finished(QNetworkReply *)), this, SLOT(onResult(QNetworkReply *)));
-
-    timer->setInterval(config->GetInterval());
-}
-
-void MainWindow::notifyWithOutTray()
-{
-    QNetworkAccessManager* nam = new QNetworkAccessManager(this);
-
-    QUrl url(act::mpei_url);
-    QNetworkReply* reply = nam->get(QNetworkRequest(url));
-
-    connect(nam, SIGNAL(finished(QNetworkReply *)), this, SLOT(onResultWithOutTray(QNetworkReply *)));
-}
 
 inline void MainWindow::SetUpTimer()
 {
@@ -165,7 +157,17 @@ inline void MainWindow::SetUpTimer()
     toolTipPpdater->start();
 
     connect(toolTipPpdater, &QTimer::timeout, this, &MainWindow::SetToolTipTime);
-    connect(timer, &QTimer::timeout, this, &MainWindow::notify);
+    connect(timer, &QTimer::timeout, this, [=]()
+    {
+        QNetworkAccessManager* nam = new QNetworkAccessManager(this);
+
+        QUrl url(act::mpei_url);
+        QNetworkReply* reply = nam->get(QNetworkRequest(url));
+
+        connect(nam, SIGNAL(finished(QNetworkReply*)), this, SLOT(onResult(QNetworkReply*)));
+
+        timer->setInterval(config->GetInterval());
+    });
 
     SetToolTipTime();
 }

@@ -32,36 +32,32 @@ public:
     ~MainWindow();
 
     void InitParams();
-
-public slots:
-    void onActivated(QSystemTrayIcon::ActivationReason reason);
-    void MessageClicked();
-public:
     void SetToolTipTime();
-
-signals:
-    void ForceClose();
 
 private slots:
     void onResult(QNetworkReply *reply);
     void onResultWithOutTray(QNetworkReply *reply);
-
-    void notify();
-    void notifyWithOutTray();
-
     void on_checkBox_stateChanged(int arg1);
     void on_spinBox_valueChanged(int arg1);
-
     void on_pushButton_clicked();
+    void onActivated(QSystemTrayIcon::ActivationReason reason);
+    void MessageClicked();
 
 private:
     inline void SetUpTimer();
     inline void SetUpSystemTrayIcon();
     inline void SetUpConfig();
 
+signals:
+    void ForceClose();
+
 private:
     QString content;
+    QTime time;
+
     Ui::MainWindow *ui;
+    QMenu *context = nullptr;
+    QVector<QAction *> actions;
 
     SConfig *config = nullptr;
     QSystemTrayIcon *tIcon = nullptr;
@@ -70,10 +66,5 @@ private:
     QTimer *toolTipPpdater = nullptr;
 
     QJsonObject *configJson = nullptr;
-    QMenu *context = nullptr;
-    QVector<QAction *> actions;
-
-    QTime time;
-
 };
 #endif // MAINWINDOW_HPP

@@ -11,16 +11,12 @@ CONFIG += c++17
 SOURCES += \
     src/confighandler.cpp \
     src/main.cpp \
-    src/mainwindow.cpp \
-    src/serverdatahandler.cpp
+    src/mainwindow.cpp
 
 HEADERS += \
     include/General/general.hpp \
     include/Mainwindow/mainwindow.hpp \
-    include/General/confighandler.hpp \
-    include/Receiver/iserveractualochka.hpp \
-    include/Receiver/iservershedule.hpp \
-    include/Receiver/serverdatahandler.hpp
+    include/General/confighandler.hpp
 
 FORMS += \
     ui/mainwindow.ui
