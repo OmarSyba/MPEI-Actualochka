@@ -15,6 +15,9 @@ MainWindow::MainWindow(QWidget *parent)
     setWindowTitle("Актуалочка");
     setFixedSize(QSize(640, 480));
 
+    ui->tabWidget->setTabText(0, tr("Информация"));
+    ui->tabWidget->setTabText(1, tr("Настройки"));
+
     SetUpSystemTrayIcon();
     SetUpConfig();
     SetUpTimer();
@@ -56,7 +59,7 @@ void MainWindow::onActivated(QSystemTrayIcon::ActivationReason reason)
     }
     if (reason == QSystemTrayIcon::Unknown)
     {
-        QSystemTrayIcon::MessageIcon icon = QSystemTrayIcon::MessageIcon(QSystemTrayIcon::Information);
+        QSystemTrayIcon::MessageIcon icon = QSystemTrayIcon::MessageIcon(QSystemTrayIcon::NoIcon);
         tIcon->showMessage(QString("Актуалочка"), content, icon);
         ui->textEdit->setText(content);
     }
@@ -174,21 +177,14 @@ inline void MainWindow::SetUpSystemTrayIcon()
 
     context = new QMenu();
     QAction *exit = new QAction(context);
-    QAction *reference = new QAction(context);
 
     exit->setText(tr("Выход"));
-    reference->setText(tr("Получить обновление вк"));
 
-    context->addAction(reference);
     context->addSeparator();
     context->addAction(exit);
 
     connect(exit, &QAction::triggered, this, [&](){
         emit ForceClose();
-    });
-
-    connect(reference, &QAction::triggered, this, [&](){
-        QDesktopServices::openUrl(QUrl("https://vk.com/mpei_memez?w=app5748831_-201318787"));
     });
 
     actions.append(exit);
@@ -230,6 +226,15 @@ void MainWindow::on_checkBox_stateChanged(int arg1)
 
 void MainWindow::on_spinBox_valueChanged(int arg1)
 {
+    if (arg1 == 0)
+    {
+        timer->stop();
+        config->SetInterval(act::interval);
+        config->WriteJson(config->GetJson());
+
+        return;
+    }
+
     uint64_t interval = arg1 * 60 * 60 * 1000;
 
     config->SetInterval(interval);
