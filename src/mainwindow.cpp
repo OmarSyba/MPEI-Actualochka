@@ -20,8 +20,8 @@ MainWindow::MainWindow(QWidget *parent)
     {
         QNetworkAccessManager* nam = new QNetworkAccessManager(this);
 
-        QUrl url(act::mpei_url);
-        QNetworkReply* reply = nam->get(QNetworkRequest(url));
+        QUrl url(act::MpeiActuallity);
+        nam->get(QNetworkRequest(url));
 
         connect(nam, SIGNAL(finished(QNetworkReply*)), this, SLOT(onResultWithOutTray(QNetworkReply*)));
     });
@@ -59,27 +59,41 @@ void MainWindow::InitParams()
         ui->checkBox->setChecked(isChecked);
 }
 
-void MainWindow::onActivated(QSystemTrayIcon::ActivationReason reason)
+void MainWindow::onActivatedSetContent(QSystemTrayIcon::ActivationReason reason)
 {
     switch (reason)
     {
-    case QSystemTrayIcon::MiddleClick:
-    case QSystemTrayIcon::DoubleClick:
+    case QSystemTrayIcon::Unknown:
+        tIcon->showMessage(QString("Актуалочка"), actuallyContent, QSystemTrayIcon::MessageIcon(QSystemTrayIcon::NoIcon));
+        ui->textEdit->setText(actuallyContent);
         break;
     case QSystemTrayIcon::Context:
         tIcon->setContextMenu(context);
         break;
-
     case QSystemTrayIcon::Trigger:
         this->show();
         InitParams();
         break;
-
-    case QSystemTrayIcon::Unknown:
-        QSystemTrayIcon::MessageIcon icon = QSystemTrayIcon::MessageIcon(QSystemTrayIcon::NoIcon);
-        tIcon->showMessage(QString("Актуалочка"), content, icon);
-        ui->textEdit->setText(content);
+    case QSystemTrayIcon::MiddleClick:
+    case QSystemTrayIcon::DoubleClick:
         break;
+    }
+}
+
+void MainWindow::onActivatedSetSchedule()
+{
+    for (auto&x : scheduleContent)
+    {
+        QString ExistingText = ui->textEditShedule->toPlainText();
+        if (!ExistingText.isEmpty())
+        {
+            ui->textEditShedule->setText(ExistingText + "\n\n" + x);
+        }
+        else
+        {
+            ui->textEditShedule->setText(x);
+        }
+
     }
 }
 
@@ -111,36 +125,38 @@ void MainWindow::SetToolTipTime()
     }
 }
 
-void MainWindow::onResult(QNetworkReply *reply)
+void MainWindow::onResultActually(QNetworkReply *reply)
 {
     if (reply->error() == QNetworkReply::NoError)
     {
-        QString strReply = (QString)reply->readAll();
-
-        QJsonDocument jsonResponse = QJsonDocument::fromJson(strReply.toUtf8());
-        QJsonObject jsonObject = jsonResponse.object();
-
-        content = jsonObject["actuality"].toObject()["content"].toString();
+        actuallyContent = ServerJsonParser::ParseJsonFromServer(reply, IEType::Actualochka).at(0);
     }
     else
     {
-        content = reply->errorString();
+        actuallyContent = reply->errorString();
     }
 
     tIcon->setVisible(true);
-    this->onActivated(QSystemTrayIcon::Unknown);
+    onActivatedSetContent(QSystemTrayIcon::Unknown);
+}
+
+void MainWindow::onResultSchedule(QNetworkReply *reply)
+{
+    if (reply->error() == QNetworkReply::NoError)
+    {
+        scheduleContent = ServerJsonParser::ParseJsonFromServer(reply, IEType::Shedule);
+    }
+    else
+    {
+        scheduleContent[0] = reply->errorString();
+    }
+    onActivatedSetSchedule();
 }
 
 void MainWindow::onResultWithOutTray(QNetworkReply *reply)
 {
-    QString strReply = (QString)reply->readAll();
-
-    QJsonDocument jsonResponse = QJsonDocument::fromJson(strReply.toUtf8());
-    QJsonObject jsonObject = jsonResponse.object();
-
-    content = jsonObject["actuality"].toObject()["content"].toString();
-
-    ui->textEdit->setText(content);
+    actuallyContent = ServerJsonParser::ParseJsonFromServer(reply, IEType::Actualochka).at(0);
+    ui->textEdit->setText(actuallyContent);
 }
 
 
@@ -159,13 +175,16 @@ inline void MainWindow::SetUpTimer()
     connect(toolTipPpdater, &QTimer::timeout, this, &MainWindow::SetToolTipTime);
     connect(timer, &QTimer::timeout, this, [=]()
     {
-        QNetworkAccessManager* nam = new QNetworkAccessManager(this);
+        QNetworkAccessManager* namA = new QNetworkAccessManager(this);
+        QUrl urlA(act::MpeiActuallity);
+        namA->get(QNetworkRequest(urlA));
 
-        QUrl url(act::mpei_url);
-        QNetworkReply* reply = nam->get(QNetworkRequest(url));
+        QNetworkAccessManager* namS = new QNetworkAccessManager(this);
+        QUrl urlS(act::MpeiSchedule);
+        namS->get(QNetworkRequest(urlS));
 
-        connect(nam, SIGNAL(finished(QNetworkReply*)), this, SLOT(onResult(QNetworkReply*)));
-
+        connect(namA, SIGNAL(finished(QNetworkReply*)), this, SLOT(onResultActually(QNetworkReply*)));
+        connect(namS, SIGNAL(finished(QNetworkReply*)), this, SLOT(onResultSchedule(QNetworkReply*)));
         timer->setInterval(config->GetInterval());
     });
 
@@ -179,9 +198,12 @@ inline void MainWindow::SetUpSystemTrayIcon()
 
     context = new QMenu();
     QAction *exit = new QAction(context);
+    QAction *settingTab = new QAction(context);
 
     exit->setText(tr("Выход"));
+    settingTab->setText(tr("Настройки"));
 
+    context->addAction(settingTab);
     context->addSeparator();
     context->addAction(exit);
 
@@ -189,7 +211,13 @@ inline void MainWindow::SetUpSystemTrayIcon()
         emit ForceClose();
     });
 
+    connect(settingTab, &QAction::triggered, this, [&](){
+        show();
+        ui->tabWidget->setCurrentIndex(1);
+    });
+
     actions.append(exit);
+    actions.append(settingTab);
 }
 
 void MainWindow::SetUpConfig()
@@ -199,7 +227,7 @@ void MainWindow::SetUpConfig()
     config->HandleConfigJson(configJson);
 
     connect(tIcon, &QSystemTrayIcon::messageClicked, this, &MainWindow::MessageClicked);
-    connect(tIcon, &QSystemTrayIcon::activated, this, &MainWindow::onActivated);
+    connect(tIcon, &QSystemTrayIcon::activated, this, &MainWindow::onActivatedSetContent);
     config->WriteJson(config->GetJson());
 }
 
@@ -231,7 +259,7 @@ void MainWindow::on_spinBox_valueChanged(int arg1)
     if (arg1 == 0)
     {
         timer->stop();
-        config->SetInterval(act::interval);
+        config->SetInterval(act::Interval);
         config->WriteJson(config->GetJson());
 
         return;

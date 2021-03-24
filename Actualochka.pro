@@ -11,12 +11,14 @@ CONFIG += c++17
 SOURCES += \
     src/confighandler.cpp \
     src/main.cpp \
-    src/mainwindow.cpp
+    src/mainwindow.cpp \
+    src/serverjsonparser.cpp
 
 HEADERS += \
     include/General/general.hpp \
     include/Mainwindow/mainwindow.hpp \
-    include/General/confighandler.hpp
+    include/General/confighandler.hpp \
+    include/Receiver/serverjsonparser.hpp
 
 FORMS += \
     ui/mainwindow.ui

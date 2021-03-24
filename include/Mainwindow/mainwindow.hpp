@@ -2,13 +2,6 @@
 #define MAINWINDOW_HPP
 
 #include <QMainWindow>
-
-#include <QtNetwork/QNetworkReply>
-#include <QtNetwork/QNetworkAccessManager>
-
-#include <QJsonDocument>
-#include <QJsonObject>
-#include <QJsonArray>
 #include <QVector>
 
 #include <QSystemTrayIcon>
@@ -18,6 +11,7 @@
 
 #include "../General/general.hpp"
 #include "../General/confighandler.hpp"
+#include "../Receiver/serverjsonparser.hpp"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -35,12 +29,14 @@ public:
     void SetToolTipTime();
 
 private slots:
-    void onResult(QNetworkReply *reply);
+    void onResultActually(QNetworkReply *reply);
+    void onResultSchedule(QNetworkReply *reply);
     void onResultWithOutTray(QNetworkReply *reply);
     void on_checkBox_stateChanged(int arg1);
     void on_spinBox_valueChanged(int arg1);
     void on_pushButton_clicked();
-    void onActivated(QSystemTrayIcon::ActivationReason reason);
+    void onActivatedSetContent(QSystemTrayIcon::ActivationReason reason);
+    void onActivatedSetSchedule();
     void MessageClicked();
 
 private:
@@ -52,7 +48,8 @@ signals:
     void ForceClose();
 
 private:
-    QString content;
+    QString actuallyContent;
+    QVector<QString> scheduleContent;
     QTime time;
 
     Ui::MainWindow *ui;
