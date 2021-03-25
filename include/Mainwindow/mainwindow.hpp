@@ -28,13 +28,18 @@ public:
 private slots:
     void onResultActually(QNetworkReply *reply);
     void onResultSchedule(QNetworkReply *reply);
+    void onResultScheduleMonth(QNetworkReply *reply);
     void onResultWithOutTray(QNetworkReply *reply);
+
+    void onActivatedSetContent(QSystemTrayIcon::ActivationReason reason);
+    void onActivatedSetSchedule();
+
+    void onActivatedSetCalendar();
+    void MessageClicked();
+
     void on_checkBox_stateChanged(int arg1);
     void on_spinBox_valueChanged(int arg1);
     void on_pushButton_clicked();
-    void onActivatedSetContent(QSystemTrayIcon::ActivationReason reason);
-    void onActivatedSetSchedule();
-    void MessageClicked();
 
 private:
     inline void SetUpTimer();
@@ -47,6 +52,7 @@ signals:
 private:
     QString actuallyContent;
     QVector<QString> scheduleContent;
+    QVector<CellData> scheduleCalendar;
     QTime time;
 
     Ui::MainWindow *ui;

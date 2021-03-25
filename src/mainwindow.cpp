@@ -41,6 +41,8 @@ MainWindow::~MainWindow()
 
 void MainWindow::InitParams()
 {
+    ui->versionLabel->setText("v0.1.1");
+
     setWindowTitle("Актуалочка");
     setFixedSize(QSize(640, 480));
 
@@ -95,6 +97,24 @@ void MainWindow::onActivatedSetSchedule()
     }
 }
 
+void MainWindow::onActivatedSetCalendar()
+{
+    auto calendar = ui->calendarWidget;
+    calendar->setStyleSheet("QTableView{selection-background-color: #222;}");
+    calendar->setMinimumDate(QDate().currentDate().addDays(-1));
+    calendar->setMaximumDate(QDate().currentDate().addMonths(3));
+
+    QTextCharFormat form = QTextCharFormat();;
+    form.setBackground(QBrush(QColor("#2F3136")));
+
+    for (auto &x : scheduleCalendar)
+    {
+        form.setToolTip(x.lession + " - " + x.lessionType);
+        form.setForeground(QBrush(QColor(255,255,255)));
+        calendar->setDateTextFormat(x.date.date(), form);
+    }
+}
+
 void MainWindow::MessageClicked()
 {
     this->show();
@@ -142,13 +162,26 @@ void MainWindow::onResultSchedule(QNetworkReply *reply)
 {
     if (reply->error() == QNetworkReply::NoError)
     {
-        scheduleContent = ServerJsonParser::ParseJsonFromServer(reply, IEType::Shedule);
+        scheduleContent = ServerJsonParser::ParseJsonFromServer(reply, IEType::Schedule);
     }
     else
     {
         scheduleContent[0] = reply->errorString();
     }
     onActivatedSetSchedule();
+}
+
+void MainWindow::onResultScheduleMonth(QNetworkReply *reply)
+{
+    if (reply->error() == QNetworkReply::NoError)
+    {
+        scheduleCalendar = ServerJsonParser::ParseJsonMonth(reply);
+        onActivatedSetCalendar();
+    }
+    else
+    {
+        qDebug() << "Can't get schedule at month";
+    }
 }
 
 void MainWindow::onResultWithOutTray(QNetworkReply *reply)
@@ -173,11 +206,15 @@ inline void MainWindow::SetUpTimer()
     connect(toolTipPpdater, &QTimer::timeout, this, &MainWindow::SetToolTipTime);
     connect(timer, &QTimer::timeout, this, [=]()
     {
+        //https://mpei-server.herokuapp.com/api/getSchedule?start=2021.03.22&finish=2021.04.22
+        QString ScheduleMonthUrl = act::MpeiSchedule + "?start=" + QDate().currentDate().toString("yyyy.MM.dd") + "&finish=" + QDate().currentDate().addMonths(3).toString("yyyy.MM.dd");
         auto namA = NetworReplyer::AccessUrl(act::MpeiActuallity);
         auto namS = NetworReplyer::AccessUrl(act::MpeiSchedule);
+        auto namM = NetworReplyer::AccessUrl(ScheduleMonthUrl);
 
         connect(namA, SIGNAL(finished(QNetworkReply*)), this, SLOT(onResultActually(QNetworkReply*)));
         connect(namS, SIGNAL(finished(QNetworkReply*)), this, SLOT(onResultSchedule(QNetworkReply*)));
+        connect(namM, SIGNAL(finished(QNetworkReply*)), this, SLOT(onResultScheduleMonth(QNetworkReply*)));
         timer->setInterval(config->GetInterval());
     });
 
@@ -272,4 +309,3 @@ void MainWindow::on_pushButton_clicked()
 {
     config->WriteJson(config->GetJson());
 }
-

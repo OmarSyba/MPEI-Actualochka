@@ -4,6 +4,9 @@
 #include <QString>
 #include <QDir>
 
+//Template url
+//https://mpei-server.herokuapp.com/api/getSchedule?start=2021.03.22&finish=2021.04.22
+
 namespace act
 {
     static QString MpeiActuallity = "https://mpei-server.herokuapp.com/api/getActuality";
