@@ -4,6 +4,7 @@
 #include <QThread>
 #include <QCheckBox>
 #include <QSettings>
+#include <QDesktopServices>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -11,20 +12,26 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
-    setWindowTitle("Актуалочка");
-    setFixedSize(QSize(640, 480));
-
     SetUpSystemTrayIcon();
     SetUpConfig();
     SetUpTimer();
 
-    connect(ui->UpdateButton, &QPushButton::clicked, this, &MainWindow::notifyWithOutTray);
+    connect(ui->UpdateButton, &QPushButton::clicked, this, [&]()
+    {
+        auto nam = NetworReplyer::AccessUrl(act::MpeiActuallity);
+        connect(nam, SIGNAL(finished(QNetworkReply*)), this, SLOT(onResultWithOutTray(QNetworkReply*)));
+    });
 }
 
 MainWindow::~MainWindow()
 {
     config->WriteJson(config->GetJson());
 
+    for (auto& x : this->actions)
+    {
+        delete x;
+    }
+    delete context;
     delete tIcon;
     delete timer;
     delete config;
@@ -33,6 +40,14 @@ MainWindow::~MainWindow()
 
 void MainWindow::InitParams()
 {
+    setWindowTitle("Актуалочка");
+    setFixedSize(QSize(640, 480));
+
+    ui->tabWidget->setTabText(0, tr("Информация"));
+    ui->tabWidget->setTabText(1, tr("Настройки"));
+    ui->tabWidget->setTabText(2, tr("Календарь"));
+    ui->tabWidget->setCurrentIndex(0);
+
     auto time = ((config->GetInterval() / 1000)/ 60) / 60;
     if (ui->spinBox)
         ui->spinBox->setValue(time);
@@ -42,19 +57,40 @@ void MainWindow::InitParams()
         ui->checkBox->setChecked(isChecked);
 }
 
-void MainWindow::onActivated(QSystemTrayIcon::ActivationReason reason)
+void MainWindow::onActivatedSetContent(QSystemTrayIcon::ActivationReason reason)
 {
-    QSystemTrayIcon::MessageIcon icon = QSystemTrayIcon::MessageIcon(QSystemTrayIcon::Information);
-
-    if (reason == QSystemTrayIcon::Unknown)
+    switch (reason)
     {
-        tIcon->showMessage(QString("Актуалочка"), content, icon, 1000000);
-        ui->textEdit->setText(content);
-    }
-    else if (reason == QSystemTrayIcon::Trigger)
-    {
+    case QSystemTrayIcon::Unknown:
+        tIcon->showMessage(QString("Актуалочка"), actuallyContent, QSystemTrayIcon::MessageIcon(QSystemTrayIcon::NoIcon));
+        ui->textEdit->setText(actuallyContent);
+        break;
+    case QSystemTrayIcon::Context:
+        tIcon->setContextMenu(context);
+        break;
+    case QSystemTrayIcon::Trigger:
         this->show();
         InitParams();
+        break;
+    case QSystemTrayIcon::MiddleClick:
+    case QSystemTrayIcon::DoubleClick:
+        break;
+    }
+}
+
+void MainWindow::onActivatedSetSchedule()
+{
+    for (auto&x : scheduleContent)
+    {
+        QString ExistingText = ui->textEditShedule->toPlainText();
+        if (!ExistingText.isEmpty())
+        {
+            ui->textEditShedule->setText(ExistingText + "\n\n" + x);
+        }
+        else
+        {
+            ui->textEditShedule->setText(x);
+        }
     }
 }
 
@@ -64,60 +100,62 @@ void MainWindow::MessageClicked()
     InitParams();
 }
 
+void MainWindow::SetToolTipTime()
+{
+    uint64_t remaingTime = timer->remainingTime() / 60000;
+    QString suffix = "минут";
 
-void MainWindow::onResult(QNetworkReply *reply)
+    if (remaingTime > 60)
+    {
+        remaingTime /= 60;
+        suffix = "часов";
+    }
+
+    if (tIcon)
+    {
+
+        tIcon->setToolTip(QString::number(
+            remaingTime) == QString::number(0) ?
+            "Осталось " + QString::number(config->GetInterval() / (60 * 1000 * 60)) + " " + "часов" :
+            "Осталось " + QString::number(remaingTime) + " " + suffix
+            );
+    }
+}
+
+void MainWindow::onResultActually(QNetworkReply *reply)
 {
     if (reply->error() == QNetworkReply::NoError)
     {
-        QString strReply = (QString)reply->readAll();
-
-        QJsonDocument jsonResponse = QJsonDocument::fromJson(strReply.toUtf8());
-        QJsonObject jsonObject = jsonResponse.object();
-
-        content = jsonObject["actuality"].toObject()["content"].toString();
-
-        tIcon->setVisible(true);
-        this->onActivated(QSystemTrayIcon::Unknown);
+        actuallyContent = ServerJsonParser::ParseJsonFromServer(reply, IEType::Actualochka).at(0);
     }
     else
     {
-        qDebug() << "ERROR";
+        actuallyContent = reply->errorString();
     }
+
+    tIcon->setVisible(true);
+    onActivatedSetContent(QSystemTrayIcon::Unknown);
+}
+
+void MainWindow::onResultSchedule(QNetworkReply *reply)
+{
+    if (reply->error() == QNetworkReply::NoError)
+    {
+        scheduleContent = ServerJsonParser::ParseJsonFromServer(reply, IEType::Shedule);
+    }
+    else
+    {
+        scheduleContent[0] = reply->errorString();
+    }
+    onActivatedSetSchedule();
 }
 
 void MainWindow::onResultWithOutTray(QNetworkReply *reply)
 {
-    QString strReply = (QString)reply->readAll();
-
-    QJsonDocument jsonResponse = QJsonDocument::fromJson(strReply.toUtf8());
-    QJsonObject jsonObject = jsonResponse.object();
-
-    content = jsonObject["actuality"].toObject()["content"].toString();
-
-    ui->textEdit->setText(content);
+    actuallyContent = ServerJsonParser::ParseJsonFromServer(reply, IEType::Actualochka).at(0);
+    ui->textEdit->setText(actuallyContent);
 }
 
-void MainWindow::notify()
-{
-    QNetworkAccessManager* nam = new QNetworkAccessManager(this);
-
-    QUrl url(act::mpei_url);
-    QNetworkReply* reply = nam->get(QNetworkRequest(url));
-
-    connect(nam, SIGNAL(finished(QNetworkReply *)), this, SLOT(onResult(QNetworkReply *)));
-
-    timer->setInterval(config->GetInterval());
-}
-
-void MainWindow::notifyWithOutTray()
-{
-    QNetworkAccessManager* nam = new QNetworkAccessManager(this);
-
-    QUrl url(act::mpei_url);
-    QNetworkReply* reply = nam->get(QNetworkRequest(url));
-
-    connect(nam, SIGNAL(finished(QNetworkReply *)), this, SLOT(onResultWithOutTray(QNetworkReply *)));
-}
 
 inline void MainWindow::SetUpTimer()
 {
@@ -125,13 +163,53 @@ inline void MainWindow::SetUpTimer()
 
     timer->setInterval(1);
     timer->start();
-    connect(timer, &QTimer::timeout, this, &MainWindow::notify);
+
+    toolTipPpdater = new QTimer(this);
+    toolTipPpdater->setInterval(60 * 1000);
+
+    toolTipPpdater->start();
+
+    connect(toolTipPpdater, &QTimer::timeout, this, &MainWindow::SetToolTipTime);
+    connect(timer, &QTimer::timeout, this, [=]()
+    {
+        auto namA = NetworReplyer::AccessUrl(act::MpeiActuallity);
+        auto namS = NetworReplyer::AccessUrl(act::MpeiSchedule);
+
+        connect(namA, SIGNAL(finished(QNetworkReply*)), this, SLOT(onResultActually(QNetworkReply*)));
+        connect(namS, SIGNAL(finished(QNetworkReply*)), this, SLOT(onResultSchedule(QNetworkReply*)));
+        timer->setInterval(config->GetInterval());
+    });
+
+    SetToolTipTime();
 }
 
 inline void MainWindow::SetUpSystemTrayIcon()
 {
     tIcon = new QSystemTrayIcon();
     tIcon->setIcon(QIcon(":/icon/favicon.ico"));
+
+    context = new QMenu();
+    QAction *exit = new QAction(context);
+    QAction *settingTab = new QAction(context);
+
+    exit->setText(tr("Выход"));
+    settingTab->setText(tr("Настройки"));
+
+    context->addAction(settingTab);
+    context->addSeparator();
+    context->addAction(exit);
+
+    connect(exit, &QAction::triggered, this, [&](){
+        emit ForceClose();
+    });
+
+    connect(settingTab, &QAction::triggered, this, [&](){
+        show();
+        ui->tabWidget->setCurrentIndex(1);
+    });
+
+    actions.append(exit);
+    actions.append(settingTab);
 }
 
 void MainWindow::SetUpConfig()
@@ -141,7 +219,7 @@ void MainWindow::SetUpConfig()
     config->HandleConfigJson(configJson);
 
     connect(tIcon, &QSystemTrayIcon::messageClicked, this, &MainWindow::MessageClicked);
-    connect(tIcon, &QSystemTrayIcon::activated, this, &MainWindow::onActivated);
+    connect(tIcon, &QSystemTrayIcon::activated, this, &MainWindow::onActivatedSetContent);
     config->WriteJson(config->GetJson());
 }
 
@@ -170,6 +248,15 @@ void MainWindow::on_checkBox_stateChanged(int arg1)
 
 void MainWindow::on_spinBox_valueChanged(int arg1)
 {
+    if (arg1 == 0)
+    {
+        timer->stop();
+        config->SetInterval(act::Interval);
+        config->WriteJson(config->GetJson());
+
+        return;
+    }
+
     uint64_t interval = arg1 * 60 * 60 * 1000;
 
     config->SetInterval(interval);
