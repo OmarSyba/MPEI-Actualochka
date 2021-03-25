@@ -1,4 +1,5 @@
 #include "../include/Mainwindow/mainwindow.hpp"
+#include "../include/General/confighandler.hpp"
 #include "ui_mainwindow.h"
 
 #include <QThread>
@@ -251,7 +252,7 @@ void MainWindow::on_spinBox_valueChanged(int arg1)
     if (arg1 == 0)
     {
         timer->stop();
-        config->SetInterval(act::Interval);
+        config->SetInterval(Interval);
         config->WriteJson(config->GetJson());
 
         return;

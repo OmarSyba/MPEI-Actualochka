@@ -5,6 +5,8 @@
 #include <QJsonObject>
 #include <QJsonArray>
 
+static uint32_t Interval = 28800000;
+
 class SConfig
 {
 public:

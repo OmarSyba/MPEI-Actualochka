@@ -29,7 +29,7 @@ QJsonObject *SConfig::OpenConfigJson()
     if (file.pos() == 0)
     {
         (*_jsonObject)["runs"] = 1;
-        (*_jsonObject)["interval"] = (int)act::Interval;
+        (*_jsonObject)["interval"] = (int)Interval;
         (*_jsonObject)["autorun"] = false;
     }
 
@@ -52,7 +52,7 @@ void SConfig::HandleConfigJson(QJsonObject *jsonObject)
 
     if (_appRuns == 1)
     {
-        _interval = act::Interval;
+        _interval = Interval;
         _autoRun = false;
     }
 }
