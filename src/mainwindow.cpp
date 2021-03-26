@@ -41,7 +41,7 @@ MainWindow::~MainWindow()
 
 void MainWindow::InitParams()
 {
-    ui->versionLabel->setText("v0.1.1");
+    ui->versionLabel->setText("v1.0.1");
 
     setWindowTitle("Актуалочка");
     setFixedSize(QSize(640, 480));
