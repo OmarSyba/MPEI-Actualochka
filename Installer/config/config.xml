@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Installer>
+    <Name>Actualochka Installer</Name>
+    <Version>1.0.1</Version>
+    <Title>1.0.1 Installer</Title>
+    <Publisher>SYBABUBIK</Publisher>
+    <StartMenuDir>Actualochka</StartMenuDir>
+	<WizardStyle>Modern</WizardStyle>
+    <TargetDir>@RootDir@Program Files (x86)\SYBABUIK\Actualochka</TargetDir>
+        <AllowSpaceInPath>true</AllowSpaceInPath>
+    <RemoteRepositories>
+        <Repository>
+	    <Url>https://mpei-win.herokuapp.com/</Url>
+	</Repository>
+    </RemoteRepositories>
+</Installer>

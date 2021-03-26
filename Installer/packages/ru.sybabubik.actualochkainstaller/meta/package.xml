@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Package>
+    <DisplayName>Actualochka Installer</DisplayName>
+    <Description>The main component</Description>
+    <Version>1.0.1</Version>
+	<Licenses>
+        <License name="Beer Public License Agreement" file="license.txt"/>
+    </Licenses>
+    <ReleaseDate>2020-03-25</ReleaseDate>
+        <Default>true</Default>
+    <Name>ru.sybabubik.actualochkainstaller</Name>
+    <Script>installscript.qs</Script>
+    <ForcedInstallation>true</ForcedInstallation>
+    <RequiresAdminRights>true</RequiresAdminRights>
+</Package>
