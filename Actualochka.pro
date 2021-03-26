@@ -14,6 +14,20 @@ CONFIG(debug, debug|release) {
     DESTDIR = $$OUT_PWD/../../ActualochkaRelease
 }
 
+OPENSSL = C:\Other\Openssl
+win32 {
+    EXTRA_BINFILES += \
+        $$OPENSSL\libcrypto-1_1-x64.dll \
+	$$OPENSSL\libssl-1_1-x64.dll
+    EXTRA_BINFILES_WIN = $${EXTRA_BINFILES}
+    EXTRA_BINFILES_WIN ~= s,/,\\,g
+        DESTDIR_WIN = $${DESTDIR}
+    DESTDIR_WIN ~= s,/,\\,g
+    for(FILE,EXTRA_BINFILES_WIN){
+                QMAKE_POST_LINK +=$$quote(cmd /c copy /y $${FILE} $${DESTDIR_WIN}$$escape_expand(\n\t))
+    }
+}
+
 TEMPLATE = app
 
 MOC_DIR = ../common/build/moc
@@ -21,9 +35,9 @@ RCC_DIR = ../common/build/rcc
 UI_DIR =  ../common/build/ui
 
 CONFIG(debug, debug|release) {
-    QMAKE_POST_LINK = windeployqt $$OUT_PWD/../../ActualochkaDebug
+    QMAKE_POST_LINK += windeployqt $$OUT_PWD/../../ActualochkaDebug
 } else {
-    QMAKE_POST_LINK = windeployqt $$OUT_PWD/../../ActualochkaRelease
+    QMAKE_POST_LINK += windeployqt $$OUT_PWD/../../ActualochkaRelease
 }
 
 win32:OBJECTS_DIR = ../common/build/o/win32

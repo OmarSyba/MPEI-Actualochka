@@ -50,6 +50,7 @@ void MainWindow::InitParams()
     ui->tabWidget->setTabText(1, tr("Настройки"));
     ui->tabWidget->setTabText(2, tr("Календарь"));
     ui->tabWidget->setCurrentIndex(0);
+    ui->textEditShedule->setReadOnly(true);
 
     auto time = ((config->GetInterval() / 1000)/ 60) / 60;
     if (ui->spinBox)
@@ -105,14 +106,32 @@ void MainWindow::onActivatedSetCalendar()
     calendar->setMaximumDate(QDate().currentDate().addMonths(3));
 
     QTextCharFormat form = QTextCharFormat();;
-    form.setBackground(QBrush(QColor("#2F3136")));
-
     for (auto &x : scheduleCalendar)
     {
+        if (x.lessionType == tr("Лекция"))
+        {
+            form.setBackground(QBrush(QColor("#444C55")));
+        }
+        else if (x.lessionType == tr("Практическое занятие"))
+        {
+            form.setBackground(QBrush(QColor("#2D333B")));
+        }
+        else
+        {
+            form.setBackground(QBrush(QColor("#22272E")));
+        }
+
         form.setToolTip(x.lession + " - " + x.lessionType);
         form.setForeground(QBrush(QColor(255,255,255)));
         calendar->setDateTextFormat(x.date.date(), form);
     }
+    ui->color1->setText(tr("Лекция"));
+    ui->color2->setText(tr("Практическое занятие"));
+    ui->color3->setText(tr("Лабораторное занятие"));
+
+    ui->color1->setStyleSheet("QLabel { background-color : #444C55; color : white }");
+    ui->color2->setStyleSheet("QLabel { background-color : #2D333B; color : white }");
+    ui->color3->setStyleSheet("QLabel { background-color : #22272E; color : white }");
 }
 
 void MainWindow::MessageClicked()
@@ -206,7 +225,6 @@ inline void MainWindow::SetUpTimer()
     connect(toolTipPpdater, &QTimer::timeout, this, &MainWindow::SetToolTipTime);
     connect(timer, &QTimer::timeout, this, [=]()
     {
-        //https://mpei-server.herokuapp.com/api/getSchedule?start=2021.03.22&finish=2021.04.22
         QString ScheduleMonthUrl = act::MpeiSchedule + "?start=" + QDate().currentDate().toString("yyyy.MM.dd") + "&finish=" + QDate().currentDate().addMonths(3).toString("yyyy.MM.dd");
         auto namA = NetworReplyer::AccessUrl(act::MpeiActuallity);
         auto namS = NetworReplyer::AccessUrl(act::MpeiSchedule);
@@ -229,10 +247,13 @@ inline void MainWindow::SetUpSystemTrayIcon()
     context = new QMenu();
     QAction *exit = new QAction(context);
     QAction *settingTab = new QAction(context);
+    QAction *calendarTab = new QAction(context);
 
     exit->setText(tr("Выход"));
     settingTab->setText(tr("Настройки"));
+    calendarTab->setText(tr("Календарь"));
 
+    context->addAction(calendarTab);
     context->addAction(settingTab);
     context->addSeparator();
     context->addAction(exit);
@@ -246,8 +267,14 @@ inline void MainWindow::SetUpSystemTrayIcon()
         ui->tabWidget->setCurrentIndex(1);
     });
 
+    connect(calendarTab, &QAction::triggered, this, [&](){
+        show();
+        ui->tabWidget->setCurrentIndex(2);
+    });
+
     actions.append(exit);
     actions.append(settingTab);
+    actions.append(calendarTab);
 }
 
 void MainWindow::SetUpConfig()
