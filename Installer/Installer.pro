@@ -70,6 +70,7 @@ CONFIG(release, debug|release) {
  
 DISTFILES += \
     config/config.xml \
+    config/style.qss \
     packages/ru.sybabubik.actualochkainstaller/meta/installscript.qs \
     packages/ru.sybabubik.actualochkainstaller/meta/package.xml \
     config/config.xml \
