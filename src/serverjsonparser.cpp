@@ -1,5 +1,4 @@
 #include "../include/Receiver/serverjsonparser.hpp"
-
 #include <QVector>
 
 QVector<QString> ServerJsonParser::ParseJsonFromServer(QNetworkReply *reply, IEType type)
@@ -12,7 +11,7 @@ QVector<QString> ServerJsonParser::ParseJsonFromServer(QNetworkReply *reply, IET
                     QString(reply->readAll()).toUtf8())
                     .object()["actuality"].toObject()["content"].toString());
         break;
-    case IEType::Shedule:
+    case IEType::Schedule:
         auto jsonArray = QJsonDocument::fromJson(
                     QString(reply->readAll()).toUtf8())
                     .object()["schedule"].toArray();
@@ -45,4 +44,27 @@ QVector<QString> ServerJsonParser::ParseJson(QJsonArray &tjsonArray)
         schedule.append(resultString);
     }
     return schedule;
+}
+
+QVector<CellData> ServerJsonParser::ParseJsonMonth(QNetworkReply *reply)
+{
+    QVector<CellData> result;
+
+    auto jsonArray = QJsonDocument::fromJson(
+                QString(reply->readAll()).toUtf8())
+                .object()["schedule"].toArray();
+
+    for (auto&& x : jsonArray)
+    {
+        QJsonObject obj = x.toObject();
+        CellData data;
+
+        data.date = QDateTime::fromString(obj["date"].toString(), "yyyy.MM.dd");
+        data.lession = obj["discipline"].toString();
+        data.lessionType = obj["kindOfWork"].toString();
+
+        result.append(data);
+    }
+
+    return result;
 }

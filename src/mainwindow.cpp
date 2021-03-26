@@ -1,4 +1,5 @@
 #include "../include/Mainwindow/mainwindow.hpp"
+#include "../include/General/confighandler.hpp"
 #include "ui_mainwindow.h"
 
 #include <QThread>
@@ -40,6 +41,8 @@ MainWindow::~MainWindow()
 
 void MainWindow::InitParams()
 {
+    ui->versionLabel->setText("v0.1.1");
+
     setWindowTitle("Актуалочка");
     setFixedSize(QSize(640, 480));
 
@@ -47,6 +50,7 @@ void MainWindow::InitParams()
     ui->tabWidget->setTabText(1, tr("Настройки"));
     ui->tabWidget->setTabText(2, tr("Календарь"));
     ui->tabWidget->setCurrentIndex(0);
+    ui->textEditShedule->setReadOnly(true);
 
     auto time = ((config->GetInterval() / 1000)/ 60) / 60;
     if (ui->spinBox)
@@ -92,6 +96,42 @@ void MainWindow::onActivatedSetSchedule()
             ui->textEditShedule->setText(x);
         }
     }
+}
+
+void MainWindow::onActivatedSetCalendar()
+{
+    auto calendar = ui->calendarWidget;
+    calendar->setStyleSheet("QTableView{selection-background-color: #222;}");
+    calendar->setMinimumDate(QDate().currentDate().addDays(-1));
+    calendar->setMaximumDate(QDate().currentDate().addMonths(3));
+
+    QTextCharFormat form = QTextCharFormat();;
+    for (auto &x : scheduleCalendar)
+    {
+        if (x.lessionType == tr("Лекция"))
+        {
+            form.setBackground(QBrush(QColor("#444C55")));
+        }
+        else if (x.lessionType == tr("Практическое занятие"))
+        {
+            form.setBackground(QBrush(QColor("#2D333B")));
+        }
+        else
+        {
+            form.setBackground(QBrush(QColor("#22272E")));
+        }
+
+        form.setToolTip(x.lession + " - " + x.lessionType);
+        form.setForeground(QBrush(QColor(255,255,255)));
+        calendar->setDateTextFormat(x.date.date(), form);
+    }
+    ui->color1->setText(tr("Лекция"));
+    ui->color2->setText(tr("Практическое занятие"));
+    ui->color3->setText(tr("Лабораторное занятие"));
+
+    ui->color1->setStyleSheet("QLabel { background-color : #444C55; color : white }");
+    ui->color2->setStyleSheet("QLabel { background-color : #2D333B; color : white }");
+    ui->color3->setStyleSheet("QLabel { background-color : #22272E; color : white }");
 }
 
 void MainWindow::MessageClicked()
@@ -141,13 +181,26 @@ void MainWindow::onResultSchedule(QNetworkReply *reply)
 {
     if (reply->error() == QNetworkReply::NoError)
     {
-        scheduleContent = ServerJsonParser::ParseJsonFromServer(reply, IEType::Shedule);
+        scheduleContent = ServerJsonParser::ParseJsonFromServer(reply, IEType::Schedule);
     }
     else
     {
         scheduleContent[0] = reply->errorString();
     }
     onActivatedSetSchedule();
+}
+
+void MainWindow::onResultScheduleMonth(QNetworkReply *reply)
+{
+    if (reply->error() == QNetworkReply::NoError)
+    {
+        scheduleCalendar = ServerJsonParser::ParseJsonMonth(reply);
+        onActivatedSetCalendar();
+    }
+    else
+    {
+        qDebug() << "Can't get schedule at month";
+    }
 }
 
 void MainWindow::onResultWithOutTray(QNetworkReply *reply)
@@ -172,11 +225,14 @@ inline void MainWindow::SetUpTimer()
     connect(toolTipPpdater, &QTimer::timeout, this, &MainWindow::SetToolTipTime);
     connect(timer, &QTimer::timeout, this, [=]()
     {
+        QString ScheduleMonthUrl = act::MpeiSchedule + "?start=" + QDate().currentDate().toString("yyyy.MM.dd") + "&finish=" + QDate().currentDate().addMonths(3).toString("yyyy.MM.dd");
         auto namA = NetworReplyer::AccessUrl(act::MpeiActuallity);
         auto namS = NetworReplyer::AccessUrl(act::MpeiSchedule);
+        auto namM = NetworReplyer::AccessUrl(ScheduleMonthUrl);
 
         connect(namA, SIGNAL(finished(QNetworkReply*)), this, SLOT(onResultActually(QNetworkReply*)));
         connect(namS, SIGNAL(finished(QNetworkReply*)), this, SLOT(onResultSchedule(QNetworkReply*)));
+        connect(namM, SIGNAL(finished(QNetworkReply*)), this, SLOT(onResultScheduleMonth(QNetworkReply*)));
         timer->setInterval(config->GetInterval());
     });
 
@@ -191,10 +247,13 @@ inline void MainWindow::SetUpSystemTrayIcon()
     context = new QMenu();
     QAction *exit = new QAction(context);
     QAction *settingTab = new QAction(context);
+    QAction *calendarTab = new QAction(context);
 
     exit->setText(tr("Выход"));
     settingTab->setText(tr("Настройки"));
+    calendarTab->setText(tr("Календарь"));
 
+    context->addAction(calendarTab);
     context->addAction(settingTab);
     context->addSeparator();
     context->addAction(exit);
@@ -208,8 +267,14 @@ inline void MainWindow::SetUpSystemTrayIcon()
         ui->tabWidget->setCurrentIndex(1);
     });
 
+    connect(calendarTab, &QAction::triggered, this, [&](){
+        show();
+        ui->tabWidget->setCurrentIndex(2);
+    });
+
     actions.append(exit);
     actions.append(settingTab);
+    actions.append(calendarTab);
 }
 
 void MainWindow::SetUpConfig()
@@ -251,7 +316,7 @@ void MainWindow::on_spinBox_valueChanged(int arg1)
     if (arg1 == 0)
     {
         timer->stop();
-        config->SetInterval(act::Interval);
+        config->SetInterval(Interval);
         config->WriteJson(config->GetJson());
 
         return;
@@ -271,4 +336,3 @@ void MainWindow::on_pushButton_clicked()
 {
     config->WriteJson(config->GetJson());
 }
-
