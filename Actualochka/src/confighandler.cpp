@@ -18,7 +18,8 @@ QJsonObject *SConfig::OpenConfigJson()
     QFile file(act::ConfigPath);
     if (!file.open(QIODevice::ReadWrite))
     {
-        //TODO
+        qDebug() << "Can't open config";
+        return nullptr;
     }
 
     QByteArray saveData = file.readAll();
@@ -73,7 +74,7 @@ void SConfig::WriteJson(QJsonObject *jsonObject)
     QFile jsonFile(act::ConfigPath);
     if (!jsonFile.open(QIODevice::WriteOnly))
     {
-        //TODO
+        return;
     }
 
     jsonFile.write(QJsonDocument(*jsonObject).toJson(QJsonDocument::Indented));

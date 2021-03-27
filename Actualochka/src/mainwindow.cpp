@@ -14,8 +14,8 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
-    SetUpSystemTrayIcon();
     SetUpConfig();
+    SetUpSystemTrayIcon();
     SetUpTimer();
 
     connect(ui->UpdateButton, &QPushButton::clicked, this, [&]()
@@ -47,6 +47,17 @@ void MainWindow::InitParams()
     setWindowTitle("Актуалочка");
     setFixedSize(QSize(640, 480));
 
+    if (config->isNotify())
+    {
+        ui->radioButton->setChecked(true);
+        ui->spinBox->setReadOnly(false);
+    }
+    else
+    {
+        ui->radioButton->setChecked(false);
+        ui->spinBox->setReadOnly(true);
+    }
+
     ui->tabWidget->setTabText(0, tr("Информация"));
     ui->tabWidget->setTabText(1, tr("Настройки"));
     ui->tabWidget->setTabText(2, tr("Календарь"));
@@ -68,7 +79,10 @@ void MainWindow::onActivatedSetContent(QSystemTrayIcon::ActivationReason reason)
     switch (reason)
     {
     case QSystemTrayIcon::Unknown:
-        tIcon->showMessage(QString("Актуалочка"), actuallyContent, QSystemTrayIcon::MessageIcon(QSystemTrayIcon::NoIcon));
+        if (config->isNotify())
+        {
+            tIcon->showMessage(QString("Актуалочка"), actuallyContent, QSystemTrayIcon::MessageIcon(QSystemTrayIcon::NoIcon));
+        }
         ui->textEdit->setText(actuallyContent);
         break;
     case QSystemTrayIcon::Context:
@@ -260,7 +274,7 @@ inline void MainWindow::SetUpTimer()
 
 inline void MainWindow::SetUpSystemTrayIcon()
 {
-    tIcon = new QSystemTrayIcon();
+    tIcon = new QSystemTrayIcon(this);
     tIcon->setIcon(QIcon(":/icon/favicon.ico"));
 
     context = new QMenu();
@@ -305,18 +319,6 @@ void MainWindow::SetUpConfig()
     config = new SConfig();
     configJson = config->OpenConfigJson();
     config->HandleConfigJson(configJson);
-
-    if (config->isNotify())
-    {
-        ui->radioButton->setChecked(true);
-        ui->spinBox->setReadOnly(false);
-    }
-    else
-    {
-        ui->radioButton->setChecked(false);
-        ui->spinBox->setReadOnly(true);
-    }
-
     config->WriteJson(config->GetJson());
 }
 
@@ -379,13 +381,15 @@ void MainWindow::on_radioButton_toggled(bool checked)
 {
     if (!checked)
     {
+        config->SetNotify(false);
         ui->spinBox->setReadOnly(true);
         timer->stop();
     }
     else
     {
+        config->SetNotify(true);
         ui->spinBox->setReadOnly(false);
-        timer->setInterval(Interval);
+        timer->setInterval(config->GetInterval());
         timer->start();
     }
 }

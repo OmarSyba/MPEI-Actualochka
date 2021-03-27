@@ -5,6 +5,12 @@
 
 int main(int argc, char *argv[])
 {
+    if (!QDir(logdir).exists())
+    {
+        QDir actDir("C:/ProgramData");
+        actDir.mkdir("Actualochka");
+    }
+
     QApplication a(argc, argv);
     a.setApplicationName("Actualochka Getter");
     a.setQuitOnLastWindowClosed(false);
