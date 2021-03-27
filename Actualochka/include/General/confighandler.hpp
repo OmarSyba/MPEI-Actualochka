@@ -19,11 +19,13 @@ public:
 
     bool isFirstRun() const noexcept;
     bool isAutoRunEnable() const;
+    bool isNotify() const;
     uint32_t GetRunsCount() const noexcept;
 
     void SetAutoRun(bool run);
     void SetInterval(uint32_t ms);
     void SetUrl(QString& url);
+    void SetNotify(bool notify);
 
     QString GetUrl() const noexcept;
     uint32_t GetInterval() const noexcept;
@@ -34,7 +36,7 @@ private:
 
     uint32_t _appRuns;
     uint32_t _interval;
-
+    bool _notify;
     bool _autoRun;
 };
 

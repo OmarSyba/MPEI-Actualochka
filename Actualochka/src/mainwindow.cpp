@@ -3,6 +3,7 @@
 #include "ui_mainwindow.h"
 
 #include <QThread>
+#include <QKeyEvent>
 #include <QCheckBox>
 #include <QSettings>
 #include <QDesktopServices>
@@ -41,7 +42,7 @@ MainWindow::~MainWindow()
 
 void MainWindow::InitParams()
 {
-    ui->versionLabel->setText("v1.0.1");
+    ui->versionLabel->setText(act::CurrnetVersion);
 
     setWindowTitle("Актуалочка");
     setFixedSize(QSize(640, 480));
@@ -63,6 +64,7 @@ void MainWindow::InitParams()
 
 void MainWindow::onActivatedSetContent(QSystemTrayIcon::ActivationReason reason)
 {
+    InitParams();
     switch (reason)
     {
     case QSystemTrayIcon::Unknown:
@@ -74,11 +76,11 @@ void MainWindow::onActivatedSetContent(QSystemTrayIcon::ActivationReason reason)
         break;
     case QSystemTrayIcon::Trigger:
         this->show();
-        InitParams();
         break;
     case QSystemTrayIcon::MiddleClick:
     case QSystemTrayIcon::DoubleClick:
-        break;
+    default:
+        this->show();
     }
 }
 
@@ -102,8 +104,8 @@ void MainWindow::onActivatedSetCalendar()
 {
     auto calendar = ui->calendarWidget;
     calendar->setStyleSheet("QTableView{selection-background-color: #222;}");
-    calendar->setMinimumDate(QDate().currentDate().addDays(-1));
-    calendar->setMaximumDate(QDate().currentDate().addMonths(3));
+    calendar->setMinimumDate(QDate().currentDate().addDays(-1));    
+    calendar->setMaximumDate(scheduleCalendar.last().date.date());
 
     QTextCharFormat form = QTextCharFormat();;
     for (auto &x : scheduleCalendar)
@@ -120,9 +122,8 @@ void MainWindow::onActivatedSetCalendar()
         {
             form.setBackground(QBrush(QColor("#22272E")));
         }
-
         form.setToolTip(x.lession + " - " + x.lessionType);
-        form.setForeground(QBrush(QColor(255,255,255)));
+        form.setForeground(QBrush(QColor(255, 255, 255)));
         calendar->setDateTextFormat(x.date.date(), form);
     }
     ui->color1->setText(tr("Лекция"));
@@ -159,6 +160,14 @@ void MainWindow::SetToolTipTime()
             "Осталось " + QString::number(config->GetInterval() / (60 * 1000 * 60)) + " " + "часов" :
             "Осталось " + QString::number(remaingTime) + " " + suffix
             );
+    }
+}
+
+void MainWindow::keyPressEvent(QKeyEvent *event)
+{
+    if (event->key() == Qt::Key_Escape)
+    {
+        close();
     }
 }
 
@@ -207,6 +216,16 @@ void MainWindow::onResultWithOutTray(QNetworkReply *reply)
 {
     actuallyContent = ServerJsonParser::ParseJsonFromServer(reply, IEType::Actualochka).at(0);
     ui->textEdit->setText(actuallyContent);
+}
+
+void MainWindow::onResultCheckUpdate(QNetworkReply *reply)
+{
+    QString version = "v" + ServerJsonParser::ParseVersion(reply);
+    if (version != act::CurrnetVersion)
+    {
+        qDebug() << version << act::CurrnetVersion;
+        emit FoundedNewVersion();
+    }
 }
 
 
@@ -263,14 +282,18 @@ inline void MainWindow::SetUpSystemTrayIcon()
     });
 
     connect(settingTab, &QAction::triggered, this, [&](){
+        InitParams();
         show();
         ui->tabWidget->setCurrentIndex(1);
     });
 
     connect(calendarTab, &QAction::triggered, this, [&](){
+        InitParams();
         show();
         ui->tabWidget->setCurrentIndex(2);
     });
+    connect(tIcon, &QSystemTrayIcon::messageClicked, this, &MainWindow::MessageClicked);
+    connect(tIcon, &QSystemTrayIcon::activated, this, &MainWindow::onActivatedSetContent);
 
     actions.append(exit);
     actions.append(settingTab);
@@ -283,8 +306,17 @@ void MainWindow::SetUpConfig()
     configJson = config->OpenConfigJson();
     config->HandleConfigJson(configJson);
 
-    connect(tIcon, &QSystemTrayIcon::messageClicked, this, &MainWindow::MessageClicked);
-    connect(tIcon, &QSystemTrayIcon::activated, this, &MainWindow::onActivatedSetContent);
+    if (config->isNotify())
+    {
+        ui->radioButton->setChecked(true);
+        ui->spinBox->setReadOnly(false);
+    }
+    else
+    {
+        ui->radioButton->setChecked(false);
+        ui->spinBox->setReadOnly(true);
+    }
+
     config->WriteJson(config->GetJson());
 }
 
@@ -335,4 +367,25 @@ void MainWindow::on_spinBox_valueChanged(int arg1)
 void MainWindow::on_pushButton_clicked()
 {
     config->WriteJson(config->GetJson());
+}
+
+void MainWindow::on_checkupdateButton_clicked()
+{
+    auto reply = NetworReplyer::AccessUrl(act::MpeiVersion);
+    connect(reply, SIGNAL(finished(QNetworkReply*)), this, SLOT(onResultCheckUpdate(QNetworkReply*)));
+}
+
+void MainWindow::on_radioButton_toggled(bool checked)
+{
+    if (!checked)
+    {
+        ui->spinBox->setReadOnly(true);
+        timer->stop();
+    }
+    else
+    {
+        ui->spinBox->setReadOnly(false);
+        timer->setInterval(Interval);
+        timer->start();
+    }
 }

@@ -31,6 +31,7 @@ QJsonObject *SConfig::OpenConfigJson()
         (*_jsonObject)["runs"] = 1;
         (*_jsonObject)["interval"] = (int)Interval;
         (*_jsonObject)["autorun"] = false;
+        (*_jsonObject)["notify"] = true;
     }
 
     file.close();
@@ -47,6 +48,7 @@ void SConfig::HandleConfigJson(QJsonObject *jsonObject)
     _appRuns = (*jsonObject)["runs"].toInt();
     _interval = (*jsonObject)["interval"].toInt();
     _autoRun = (*jsonObject)["autorun"].toBool();
+    _notify = (*jsonObject)["notify"].toBool();
 
     //qDebug() << (*jsonObject)["autorun"].toBool() << (*jsonObject)["autorun"];
 
@@ -66,6 +68,7 @@ void SConfig::WriteJson(QJsonObject *jsonObject)
     (*jsonObject)["runs"] = (int)_appRuns + 1;
     (*jsonObject)["interval"] = (int)_interval;
     (*jsonObject)["autorun"] = _autoRun;
+    (*jsonObject)["notify"] = _notify;
 
     QFile jsonFile(act::ConfigPath);
     if (!jsonFile.open(QIODevice::WriteOnly))
@@ -87,6 +90,11 @@ bool SConfig::isAutoRunEnable() const
     return _autoRun;
 }
 
+bool SConfig::isNotify() const
+{
+    return _notify;
+}
+
 void SConfig::SetAutoRun(bool run)
 {
     _autoRun = run;
@@ -100,6 +108,11 @@ void SConfig::SetInterval(uint32_t ms)
 void SConfig::SetUrl(QString &url)
 {
     act::MpeiActuallity = url;
+}
+
+void SConfig::SetNotify(bool notify)
+{
+    _notify = notify;
 }
 
 QString SConfig::GetUrl() const noexcept

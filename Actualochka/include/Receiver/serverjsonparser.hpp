@@ -29,6 +29,7 @@ public:
 
     static QVector<QString> ParseJsonFromServer(QNetworkReply *reply, IEType type);
     static QVector<CellData> ParseJsonMonth(QNetworkReply *reply);
+    static QString ParseVersion(QNetworkReply *reply);
 private:
     static QVector<QString> ParseJson(QJsonArray& tjsonArray);
 };

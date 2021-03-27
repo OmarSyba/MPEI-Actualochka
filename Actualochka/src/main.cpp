@@ -1,5 +1,6 @@
 #include "include/Mainwindow/mainwindow.hpp"
 
+#include <QProcess>
 #include <QApplication>
 
 int main(int argc, char *argv[])
@@ -10,5 +11,12 @@ int main(int argc, char *argv[])
     MainWindow w;
 
     QObject::connect(&w, &MainWindow::ForceClose, &a, &QApplication::quit);
+    QObject::connect(&w, &MainWindow::FoundedNewVersion, [&]()
+    {
+        QProcess P(&w);
+        QString Path = QString(QDir().currentPath() + "/maintenancetool.exe");
+        P.start(Path);
+        P.waitForFinished(-1);
+    });
     return a.exec();
 }

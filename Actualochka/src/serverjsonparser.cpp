@@ -68,3 +68,8 @@ QVector<CellData> ServerJsonParser::ParseJsonMonth(QNetworkReply *reply)
 
     return result;
 }
+
+QString ServerJsonParser::ParseVersion(QNetworkReply *reply)
+{
+    return QJsonDocument::fromJson(QString(reply->readAll()).toUtf8()).object()["version"].toString();
+}
