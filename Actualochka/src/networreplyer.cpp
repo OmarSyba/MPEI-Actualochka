@@ -1,6 +1,8 @@
 #include "../include/Receiver/networreplyer.hpp"
 
-QNetworkAccessManager *NetworReplyer::AccessUrl(QString turl) noexcept
+NetworkReplyer::NetworkReplyer() = default;
+
+QNetworkAccessManager *NetworkReplyer::AccessUrl(QString turl) noexcept
 {
     QNetworkAccessManager* nam = new QNetworkAccessManager();
 

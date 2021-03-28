@@ -1,12 +1,24 @@
 TEMPLATE = subdirs
 
-CONFIG += ordered sub
+CONFIG +=   ordered \
+            #actwin  \
+	    #inst    \
+	    #actand
 
-sub{
+ordered{
     SUBDIRS += \
             Actualochka \
-	    Installer
-} else {
+	    Installer \
+	    #ActualochkaAndroid
+}else:actwin{
     SUBDIRS += \
-        Actualochka \
+            Actualochka \
+}else:inst{
+    SUBDIRS += \
+            Installer \
+}
+
+else:actand{
+    SUBDIRS += \
+            ActualochkaAndroid \
 }
