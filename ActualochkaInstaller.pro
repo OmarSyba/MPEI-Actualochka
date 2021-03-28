@@ -8,7 +8,7 @@ CONFIG +=   ordered \
 ordered{
     SUBDIRS += \
             Actualochka \
-	    Installer \
+	    #Installer \
 	    #ActualochkaAndroid
 }else:actwin{
     SUBDIRS += \

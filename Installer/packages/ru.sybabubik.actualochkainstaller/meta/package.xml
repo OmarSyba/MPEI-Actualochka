@@ -2,7 +2,7 @@
 <Package>
     <DisplayName>Actualochka Installer</DisplayName>
     <Description>The main component</Description>
-    <Version>1.0.5</Version>
+    <Version>1.1.0</Version>
 	<Licenses>
         <License name="Beer Public License Agreement" file="license.txt"/>
     </Licenses>

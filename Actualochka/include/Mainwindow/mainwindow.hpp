@@ -25,6 +25,7 @@ public:
     void InitParams();
     void SetToolTipTime();
     void keyPressEvent(QKeyEvent *event) override;
+    void GetListGroups();
 
 private slots:
     void onResultActually(QNetworkReply *reply);
@@ -32,6 +33,7 @@ private slots:
     void onResultScheduleMonth(QNetworkReply *reply);
     void onResultWithOutTray(QNetworkReply *reply);
     void onResultCheckUpdate(QNetworkReply *reply);
+    void GetListOfGroups(QNetworkReply *reply);
 
     void onActivatedSetContent(QSystemTrayIcon::ActivationReason reason);
     void onActivatedSetSchedule();
@@ -44,6 +46,7 @@ private slots:
     void on_pushButton_clicked();
     void on_checkupdateButton_clicked();
     void on_radioButton_toggled(bool checked);
+    void on_comboBoxGroup_activated(int index);
 
 private:
     inline void SetUpTimer();
@@ -56,8 +59,13 @@ signals:
 
 private:
     QString actuallyContent;
+    QString groupUrl;
+
+    QMap<QString, quint32> groups;
+
     QVector<QString> scheduleContent;
     QVector<CellData> scheduleCalendar;
+
     QTime time;
 
     Ui::MainWindow *ui;

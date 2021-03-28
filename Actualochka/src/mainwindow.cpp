@@ -20,7 +20,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(ui->UpdateButton, &QPushButton::clicked, this, [&]()
     {
-        auto nam = NetworReplyer::AccessUrl(act::MpeiActuallity);
+        auto nam = NetworkReplyer::AccessUrl(act::MpeiActuallity);
         connect(nam, SIGNAL(finished(QNetworkReply*)), this, SLOT(onResultWithOutTray(QNetworkReply*)));
     });
 }
@@ -99,6 +99,7 @@ void MainWindow::onActivatedSetContent(QSystemTrayIcon::ActivationReason reason)
 
 void MainWindow::onActivatedSetSchedule()
 {
+    ui->textEditShedule->clear();
     for (auto&x : scheduleContent)
     {
         QString ExistingText = ui->textEditShedule->toPlainText();
@@ -120,7 +121,14 @@ void MainWindow::onActivatedSetCalendar()
     calendar->setMinimumDate(QDate().currentDate().addDays(-1));    
     calendar->setMaximumDate(scheduleCalendar.last().date.date());
 
-    QTextCharFormat form = QTextCharFormat();;
+    QTextCharFormat form = QTextCharFormat();
+    for (QDate date = calendar->minimumDate(); date != calendar->maximumDate(); date = date.addDays(1))
+    {
+        form.setBackground(QBrush(QColor(255, 255, 255)));
+        form.setToolTip("");
+        calendar->setDateTextFormat(date, form);
+    }
+
     for (auto &x : scheduleCalendar)
     {
         if (x.lessionType == tr("Лекция"))
@@ -198,6 +206,8 @@ void MainWindow::onResultActually(QNetworkReply *reply)
     onActivatedSetContent(QSystemTrayIcon::Unknown);
 }
 
+//groupList = ServerJsonParser::ParseGroups(reply).values();
+
 void MainWindow::onResultSchedule(QNetworkReply *reply)
 {
     if (reply->error() == QNetworkReply::NoError)
@@ -240,6 +250,28 @@ void MainWindow::onResultCheckUpdate(QNetworkReply *reply)
     }
 }
 
+void MainWindow::GetListGroups()
+{
+    auto namS = NetworkReplyer::AccessUrl(act::MpeiGroupList);
+    connect(namS, SIGNAL(finished(QNetworkReply*)), this, SLOT(GetListOfGroups(QNetworkReply*)));
+}
+
+void MainWindow::GetListOfGroups(QNetworkReply *reply)
+{
+    if (reply->error() == QNetworkReply::NoError)
+    {
+        groups = ServerJsonParser::ParseGroups(reply);
+        ui->comboBoxGroup->addItems(groups.keys());
+        for (int idx = 0; idx < groups.keys().length(); ++idx)
+        {
+            if (config->GetGroupName() == groups.keys().at(idx))
+            {
+                ui->comboBoxGroup->setCurrentIndex(idx);
+                break;
+            }
+        }
+    }
+}
 
 inline void MainWindow::SetUpTimer()
 {
@@ -256,15 +288,21 @@ inline void MainWindow::SetUpTimer()
         toolTipPpdater->start();
     }
 
+    GetListGroups();
+
     connect(toolTipPpdater, &QTimer::timeout, this, &MainWindow::SetToolTipTime);
     connect(timer, &QTimer::timeout, this, [=]()
     {
-        QString ScheduleMonthUrl = act::MpeiSchedule + "?start=" +
+        groupUrl = act::MpeiSchedule + "?group=" + QString::number(config->GetGroupId());
+
+        qDebug() << groupUrl << config->GetGroupId() << config->GetGroupName();
+
+        QString ScheduleMonthUrl = act::MpeiSchedule + "?group=" + QString::number(config->GetGroupId()) + "&start=" +
                 QDate().currentDate().toString("yyyy.MM.dd") +
                 "&finish=" + QDate().currentDate().addMonths(3).toString("yyyy.MM.dd");
-        auto namA = NetworReplyer::AccessUrl(act::MpeiActuallity);
-        auto namS = NetworReplyer::AccessUrl(act::MpeiSchedule);
-        auto namM = NetworReplyer::AccessUrl(ScheduleMonthUrl);
+        auto namA = NetworkReplyer::AccessUrl(act::MpeiActuallity);
+        auto namS = NetworkReplyer::AccessUrl(groupUrl);
+        auto namM = NetworkReplyer::AccessUrl(ScheduleMonthUrl);
 
         connect(namA, SIGNAL(finished(QNetworkReply*)), this, SLOT(onResultActually(QNetworkReply*)));
         connect(namS, SIGNAL(finished(QNetworkReply*)), this, SLOT(onResultSchedule(QNetworkReply*)));
@@ -377,7 +415,7 @@ void MainWindow::on_pushButton_clicked()
 
 void MainWindow::on_checkupdateButton_clicked()
 {
-    auto reply = NetworReplyer::AccessUrl(act::MpeiVersion);
+    auto reply = NetworkReplyer::AccessUrl(act::MpeiVersion);
     connect(reply, SIGNAL(finished(QNetworkReply*)), this, SLOT(onResultCheckUpdate(QNetworkReply*)));
 }
 
@@ -398,4 +436,26 @@ void MainWindow::on_radioButton_toggled(bool checked)
         timer->start();
         toolTipPpdater->start();
     }
+}
+
+void MainWindow::on_comboBoxGroup_activated(int index)
+{
+    QString title = ui->comboBoxGroup->itemText(index);
+    quint32 id = groups[title];
+
+    config->SetGroupName(title);
+    config->SetGroupId(id);
+    config->WriteJson(config->GetJson());
+
+    QString ScheduleShort = act::MpeiSchedule + "?group=" + QString::number(id);
+
+    QString ScheduleMonthUrl = act::MpeiSchedule + "?group=" + QString::number(id) + "&start=" +
+            QDate().currentDate().toString("yyyy.MM.dd") +
+            "&finish=" + QDate().currentDate().addMonths(3).toString("yyyy.MM.dd");
+
+    auto namA = NetworkReplyer::AccessUrl(ScheduleShort);
+    auto namS = NetworkReplyer::AccessUrl(ScheduleMonthUrl);
+
+    connect(namA, SIGNAL(finished(QNetworkReply*)), this, SLOT(onResultSchedule(QNetworkReply*)));
+    connect(namS, SIGNAL(finished(QNetworkReply*)), this, SLOT(onResultScheduleMonth(QNetworkReply*)));
 }

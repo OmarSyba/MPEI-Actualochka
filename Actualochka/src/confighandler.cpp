@@ -18,7 +18,6 @@ QJsonObject *SConfig::OpenConfigJson()
     QFile file(act::ConfigPath);
     if (!file.open(QIODevice::ReadWrite))
     {
-        qDebug() << "Can't open config";
         return nullptr;
     }
 
@@ -33,6 +32,8 @@ QJsonObject *SConfig::OpenConfigJson()
         (*_jsonObject)["interval"] = (int)Interval;
         (*_jsonObject)["autorun"] = false;
         (*_jsonObject)["notify"] = true;
+        (*_jsonObject)["groupId"] = 12861;
+        (*_jsonObject)["groupName"] = "40a-20";
     }
 
     file.close();
@@ -50,13 +51,21 @@ void SConfig::HandleConfigJson(QJsonObject *jsonObject)
     _interval = (*jsonObject)["interval"].toInt();
     _autoRun = (*jsonObject)["autorun"].toBool();
     _notify = (*jsonObject)["notify"].toBool();
-
-    //qDebug() << (*jsonObject)["autorun"].toBool() << (*jsonObject)["autorun"];
+    _groupId = (*jsonObject)["groupId"].toInteger();
+    _groupName = (*jsonObject)["groupName"].toString();
 
     if (_appRuns == 1)
     {
         _interval = Interval;
         _autoRun = false;
+        _groupId = 12861;
+        _groupName = "40a-20";
+    }
+
+    if (_groupId == 0)
+    {
+        _groupId = 12861;
+        _groupName = "40a-20";
     }
 }
 
@@ -70,6 +79,8 @@ void SConfig::WriteJson(QJsonObject *jsonObject)
     (*jsonObject)["interval"] = (int)_interval;
     (*jsonObject)["autorun"] = _autoRun;
     (*jsonObject)["notify"] = _notify;
+    (*jsonObject)["groupId"] = (int)_groupId;
+    (*jsonObject)["groupName"] = _groupName.toStdString().c_str();
 
     QFile jsonFile(act::ConfigPath);
     if (!jsonFile.open(QIODevice::WriteOnly))
@@ -96,6 +107,16 @@ bool SConfig::isNotify() const
     return _notify;
 }
 
+quint32 SConfig::GetGroupId()
+{
+    return _groupId;
+}
+
+QString SConfig::GetGroupName() const
+{
+    return _groupName;
+}
+
 void SConfig::SetAutoRun(bool run)
 {
     _autoRun = run;
@@ -114,6 +135,16 @@ void SConfig::SetUrl(QString &url)
 void SConfig::SetNotify(bool notify)
 {
     _notify = notify;
+}
+
+void SConfig::SetGroupId(quint32 id)
+{
+    _groupId = id;
+}
+
+void SConfig::SetGroupName(QString name)
+{
+    _groupName = name;
 }
 
 QString SConfig::GetUrl() const noexcept

@@ -1,15 +1,18 @@
 #ifndef NETWORREPLYER_HPP
 #define NETWORREPLYER_HPP
 
+#include "../General/general.hpp"
+
 #include <QtNetwork/QNetworkReply>
 #include <QtNetwork/QNetworkAccessManager>
 
-class NetworReplyer
+class NetworkReplyer : public QObject
 {
-    NetworReplyer() = delete;
-    NetworReplyer(NetworReplyer&&) = delete;
-    NetworReplyer(const NetworReplyer&) = delete;
+    Q_OBJECT
+    NetworkReplyer(NetworkReplyer&&) = delete;
+    NetworkReplyer(const NetworkReplyer&) = delete;
 public:
+    NetworkReplyer();
     static QNetworkAccessManager *AccessUrl(QString url) noexcept;
 };
 

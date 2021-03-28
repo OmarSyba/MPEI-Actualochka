@@ -1,6 +1,13 @@
 #include "../include/Receiver/serverjsonparser.hpp"
 #include <QVector>
 
+QMap<QString, quint32> ServerJsonParser::ParseGroups(QNetworkReply *reply)
+{
+    auto jsonArray = QJsonDocument::fromJson(QString(reply->readAll()).toUtf8()).object()["studentsGroups"].toArray();
+
+    return ParseJsonGroups(jsonArray);
+}
+
 QVector<QString> ServerJsonParser::ParseJsonFromServer(QNetworkReply *reply, IEType type)
 {
     QVector<QString> result;
@@ -41,6 +48,7 @@ QVector<QString> ServerJsonParser::ParseJson(QJsonArray &tjsonArray)
                 " - " + kindOfWork + "\n"                          +
                 " - " + beginLesson + " - " + endLesson + "\n"     +
                 " - " + lecturer;
+
         schedule.append(resultString);
     }
     return schedule;
@@ -72,4 +80,20 @@ QVector<CellData> ServerJsonParser::ParseJsonMonth(QNetworkReply *reply)
 QString ServerJsonParser::ParseVersion(QNetworkReply *reply)
 {
     return QJsonDocument::fromJson(QString(reply->readAll()).toUtf8()).object()["version"].toString();
+}
+
+QMap<QString, quint32> ServerJsonParser::ParseJsonGroups(QJsonArray &tjsonArray)
+{
+    QMap<QString, quint32> result;
+
+    for(auto&& x : tjsonArray)
+    {
+        QJsonObject obj = x.toObject();
+        quint32 groupId = obj["id"].toInt();
+        QString groupName = obj["title"].toString();
+
+        result.insert(groupName, groupId);
+    }
+
+    return result;
 }
