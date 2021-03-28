@@ -61,7 +61,6 @@ void MainWindow::InitParams()
     ui->tabWidget->setTabText(0, tr("Информация"));
     ui->tabWidget->setTabText(1, tr("Настройки"));
     ui->tabWidget->setTabText(2, tr("Календарь"));
-    ui->tabWidget->setCurrentIndex(0);
     ui->textEditShedule->setReadOnly(true);
 
     auto time = ((config->GetInterval() / 1000)/ 60) / 60;
@@ -168,7 +167,6 @@ void MainWindow::SetToolTipTime()
 
     if (tIcon)
     {
-
         tIcon->setToolTip(QString::number(
             remaingTime) == QString::number(0) ?
             "Осталось " + QString::number(config->GetInterval() / (60 * 1000 * 60)) + " " + "часов" :
@@ -253,12 +251,17 @@ inline void MainWindow::SetUpTimer()
     toolTipPpdater = new QTimer(this);
     toolTipPpdater->setInterval(60 * 1000);
 
-    toolTipPpdater->start();
+    if (config->isNotify())
+    {
+        toolTipPpdater->start();
+    }
 
     connect(toolTipPpdater, &QTimer::timeout, this, &MainWindow::SetToolTipTime);
     connect(timer, &QTimer::timeout, this, [=]()
     {
-        QString ScheduleMonthUrl = act::MpeiSchedule + "?start=" + QDate().currentDate().toString("yyyy.MM.dd") + "&finish=" + QDate().currentDate().addMonths(3).toString("yyyy.MM.dd");
+        QString ScheduleMonthUrl = act::MpeiSchedule + "?start=" +
+                QDate().currentDate().toString("yyyy.MM.dd") +
+                "&finish=" + QDate().currentDate().addMonths(3).toString("yyyy.MM.dd");
         auto namA = NetworReplyer::AccessUrl(act::MpeiActuallity);
         auto namS = NetworReplyer::AccessUrl(act::MpeiSchedule);
         auto namM = NetworReplyer::AccessUrl(ScheduleMonthUrl);
@@ -297,13 +300,15 @@ inline void MainWindow::SetUpSystemTrayIcon()
 
     connect(settingTab, &QAction::triggered, this, [&](){
         InitParams();
-        show();
+        showNormal();
+        activateWindow();
         ui->tabWidget->setCurrentIndex(1);
     });
 
     connect(calendarTab, &QAction::triggered, this, [&](){
         InitParams();
-        show();
+        showNormal();
+        activateWindow();
         ui->tabWidget->setCurrentIndex(2);
     });
     connect(tIcon, &QSystemTrayIcon::messageClicked, this, &MainWindow::MessageClicked);
@@ -352,7 +357,6 @@ void MainWindow::on_spinBox_valueChanged(int arg1)
         timer->stop();
         config->SetInterval(Interval);
         config->WriteJson(config->GetJson());
-
         return;
     }
 
@@ -384,6 +388,7 @@ void MainWindow::on_radioButton_toggled(bool checked)
         config->SetNotify(false);
         ui->spinBox->setReadOnly(true);
         timer->stop();
+        toolTipPpdater->stop();
     }
     else
     {
@@ -391,5 +396,6 @@ void MainWindow::on_radioButton_toggled(bool checked)
         ui->spinBox->setReadOnly(false);
         timer->setInterval(config->GetInterval());
         timer->start();
+        toolTipPpdater->start();
     }
 }
