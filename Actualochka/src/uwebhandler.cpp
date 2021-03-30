@@ -5,14 +5,12 @@ UWebHandler::UWebHandler(QObject *parent) : QObject(parent)
 
 }
 
-QNetworkAccessManager* UWebHandler::AccsessUrl(QString turl, void (&onResult)(QNetworkReply *))
+QNetworkAccessManager* UWebHandler::AccsessUrl(QString turl)
 {
     QNetworkAccessManager *nam = new QNetworkAccessManager();
     QUrl url(turl);
 
     nam->get(QNetworkRequest(url));
-
-    nam->deleteLater();
     return nam;
 }
 

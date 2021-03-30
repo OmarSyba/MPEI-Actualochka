@@ -21,8 +21,11 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
-    void InitWindowParameters();
     virtual void keyPressEvent(QKeyEvent *event) final;
+    void InitWindowParameters();
+
+public slots:
+    void onResultSchedule(QNetworkReply *reply);
 
 private:
     void InitPrivateParameters();
