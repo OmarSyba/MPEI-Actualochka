@@ -12,11 +12,17 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    InitUiParams();
 }
 
 MainWindow::~MainWindow()
 {
-
     delete ui;
+}
+
+void MainWindow::InitUiParams()
+{
+    setWindowTitle(tr("Актуалочка"));
+    setFixedSize(QSize(640, 480));
 }
 
