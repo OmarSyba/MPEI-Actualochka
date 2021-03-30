@@ -6,9 +6,6 @@
 #include <QTimer>
 
 #include "../General/general.hpp"
-#include "../General/confighandler.hpp"
-#include "../Receiver/serverjsonparser.hpp"
-#include "../Receiver/networreplyer.hpp"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -22,61 +19,8 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
-    void InitParams();
-    void SetToolTipTime();
-    void keyPressEvent(QKeyEvent *event) override;
-    void GetListGroups();
-
-private slots:
-    void onResultActually(QNetworkReply *reply);
-    void onResultSchedule(QNetworkReply *reply);
-    void onResultScheduleMonth(QNetworkReply *reply);
-    void onResultWithOutTray(QNetworkReply *reply);
-    void onResultCheckUpdate(QNetworkReply *reply);
-    void GetListOfGroups(QNetworkReply *reply);
-
-    void onActivatedSetContent(QSystemTrayIcon::ActivationReason reason);
-    void onActivatedSetSchedule();
-
-    void onActivatedSetCalendar();
-    void MessageClicked();
-
-    void on_checkBox_stateChanged(int arg1);
-    void on_spinBox_valueChanged(int arg1);
-    void on_pushButton_clicked();
-    void on_checkupdateButton_clicked();
-    void on_radioButton_toggled(bool checked);
-    void on_comboBoxGroup_activated(int index);
-
 private:
-    inline void SetUpTimer();
-    inline void SetUpSystemTrayIcon();
-    inline void SetUpConfig();
-
-signals:
-    void ForceClose();
-    void FoundedNewVersion();
-
-private:
-    QString actuallyContent;
-    QString groupUrl;
-
-    QMap<QString, quint32> groups;
-
-    QVector<QString> scheduleContent;
-    QVector<CellData> scheduleCalendar;
-
-    QTime time;
-
     Ui::MainWindow *ui;
-    QMenu *context = nullptr;
-    QVector<QAction *> actions;
 
-    SConfig *config = nullptr;
-    QSystemTrayIcon *tIcon = nullptr;
-
-    QTimer *timer = nullptr;
-    QTimer *toolTipPpdater = nullptr;
-    QJsonObject *configJson = nullptr;
 };
 #endif // MAINWINDOW_HPP

@@ -18,14 +18,15 @@ int main(int argc, char *argv[])
     a.setOrganizationDomain("mpei.space");
     a.setQuitOnLastWindowClosed(false);
     MainWindow w;
+    w.show();
 
-    QObject::connect(&w, &MainWindow::ForceClose, &a, &QApplication::quit);
-    QObject::connect(&w, &MainWindow::FoundedNewVersion, [&]()
-    {
-        QProcess P(&w);
-        QString Path = QString(QDir().currentPath() + "/maintenancetool.exe");
-        P.start(Path);
-        P.waitForFinished(-1);
-    });
+//    QObject::connect(&w, &MainWindow::ForceClose, &a, &QApplication::quit);
+//    QObject::connect(&w, &MainWindow::FoundedNewVersion, [&]()
+//    {
+//        QProcess P(&w);
+//        QString Path = QString(QDir().currentPath() + "/maintenancetool.exe");
+//        P.start(Path);
+//        P.waitForFinished(-1);
+//    });
     return a.exec();
 }

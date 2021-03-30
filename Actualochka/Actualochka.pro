@@ -34,29 +34,29 @@ MOC_DIR = ../../common/build/moc
 RCC_DIR = ../../common/build/rcc
 UI_DIR =  ../../common/build/ui
 
-CONFIG(debug, debug|release) {
-    QMAKE_POST_LINK += D:\Frameworks\Qt\6.0.3\mingw81_64\bin\windeployqt $$OUT_PWD/../../ActualochkaDebug
-} else {
-    QMAKE_POST_LINK += D:\Frameworks\Qt\6.0.3\mingw81_64\bin\windeployqt $$OUT_PWD/../../ActualochkaRelease
-}
+#CONFIG(debug, debug|release) {
+#    QMAKE_POST_LINK += D:\Frameworks\Qt\6.0.3\mingw81_64\bin\windeployqt $$OUT_PWD/../../ActualochkaDebug
+#} else {
+#    QMAKE_POST_LINK += D:\Frameworks\Qt\6.0.3\mingw81_64\bin\windeployqt $$OUT_PWD/../../ActualochkaRelease
+#}
 
 win32:OBJECTS_DIR = ../common/build/o/win32
 macx:OBJECTS_DIR = ../common/build/o/macx
 unix:OBJECTS_DIR = ../common/build/o/unix
 
 SOURCES += \
-    src/confighandler.cpp \
+#    src/confighandler.cpp \
     src/main.cpp \
     src/mainwindow.cpp \
-    src/networreplyer.cpp \
-    src/serverjsonparser.cpp
+#    src/networreplyer.cpp \
+#    src/serverjsonparser.cpp
 
 HEADERS += \
     include/General/general.hpp \
     include/Mainwindow/mainwindow.hpp \
-    include/General/confighandler.hpp \
-    include/Receiver/serverjsonparser.hpp \
-    include/Receiver/networreplyer.hpp
+#    include/General/confighandler.hpp \
+#    include/Receiver/serverjsonparser.hpp \
+#    include/Receiver/networreplyer.hpp
 
 FORMS += \
     ui/mainwindow.ui
