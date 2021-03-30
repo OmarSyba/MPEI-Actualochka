@@ -11,10 +11,10 @@ class UWebHandler : public QObject
 public:
     explicit UWebHandler(QObject *parent = nullptr);
 
-signals:
+    QNetworkAccessManager* AccsessUrl(QString url, void (&onResult)(QNetworkReply *reply));
 
-private:
-    QNetworkAccessManager *manager = nullptr;
+public slots:
+    void ontimeout();
 };
 
 #endif // UWEBHANDLER_HPP

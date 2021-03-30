@@ -3,12 +3,23 @@
 
 #include <QSystemTrayIcon>
 #include <QObject>
+#include <QAction>
+#include <QMenu>
 
 class USystemTray : public QSystemTrayIcon
 {
     Q_OBJECT
 public:
-    USystemTray();
+    explicit USystemTray(QObject *parent = nullptr);
+    virtual ~USystemTray() override;
+
+    QAction *GetSettingsAction()    const;
+    QAction *GetCalendarAction()    const;
+    QAction *GetExitAction()        const;
+
+private:
+    QVector<QAction *> actions;
+    QMenu *systemTrayMenu = nullptr;
 };
 
 #endif // USYSTEMTRAY_HPP

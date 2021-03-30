@@ -48,6 +48,7 @@ public:
 
 private:
     void HandleConfig();
+    void SetDefaultConfig();
 
 private:
     QJsonObject *_jsonObject = nullptr;

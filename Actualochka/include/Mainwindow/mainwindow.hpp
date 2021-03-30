@@ -2,10 +2,12 @@
 #define MAINWINDOW_HPP
 
 #include <QMainWindow>
-#include <QSystemTrayIcon>
-#include <QTimer>
 
-#include "../General/general.hpp"
+#include "include/General/general.hpp"
+#include "include/General/configerexplorer.hpp"
+#include "include/System/usystemtray.hpp"
+#include "include/System/utimerhandler.hpp"
+#include "include/System/uwebhandler.hpp"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -19,10 +21,23 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
-    void InitUiParams();
+    void InitWindowParameters();
+    virtual void keyPressEvent(QKeyEvent *event) final;
 
 private:
-    Ui::MainWindow *ui;
+    void InitPrivateParameters();
+    void SetUpSettingsTab();
+    void SetUpConnects();
+
+signals:
+    void quitapp();
+
+private:
+    ConfigerExplorer  *config  = nullptr;
+    USystemTray       *sysTray = nullptr;
+    UTimerHandler     *timer   = nullptr;
+    UWebHandler       *web     = nullptr;
+    Ui::MainWindow    *ui      = nullptr;
 
 };
 #endif // MAINWINDOW_HPP

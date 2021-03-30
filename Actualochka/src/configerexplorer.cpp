@@ -34,6 +34,7 @@ void ConfigerExplorer::OpenJsonConfig()
         (*_jsonObject)["groupName"] = tr("40a-20");
     }
     config.close();
+    HandleConfig();
 }
 
 void ConfigerExplorer::SaveConfigIntoFile()
@@ -48,18 +49,20 @@ void ConfigerExplorer::SaveConfigIntoFile()
     if (!config.open(QIODevice::WriteOnly))
     {
         qDebug() << "Config can't open to save!";
-        return;
+        SetDefaultConfig();
     }
+    else
+    {
+        (*_jsonObject)["runs"]      = QString::number(_cData.appRun).toStdString().c_str();
+        (*_jsonObject)["interval"]  = QString::number(_cData.interval).toStdString().c_str();
+        (*_jsonObject)["autorun"]   = _cData.isAutoRunEnable;
+        (*_jsonObject)["notify"]    = _cData.isNotifyEnable;
+        (*_jsonObject)["groupId"]   =  QString::number(_cData.groupId).toStdString().c_str();
+        (*_jsonObject)["groupName"] = _cData.groupName.toStdString().c_str();
 
-    (*_jsonObject)["runs"]      = QString::number(_cData.appRun).toStdString().c_str();
-    (*_jsonObject)["interval"]  = QString::number(_cData.interval).toStdString().c_str();
-    (*_jsonObject)["autorun"]   = _cData.isAutoRunEnable;
-    (*_jsonObject)["notify"]    = _cData.isNotifyEnable;
-    (*_jsonObject)["groupId"]   =  QString::number(_cData.groupId).toStdString().c_str();
-    (*_jsonObject)["groupName"] = _cData.groupName.toStdString().c_str();
-
-    config.write(QJsonDocument(*_jsonObject).toJson(QJsonDocument::Indented));
-    config.close();
+        config.write(QJsonDocument(*_jsonObject).toJson(QJsonDocument::Indented));
+        config.close();
+    }
 }
 
 void ConfigerExplorer::HandleConfig()
@@ -67,7 +70,7 @@ void ConfigerExplorer::HandleConfig()
     if (!_jsonObject)
     {
         qDebug() << "Config doesn't exist";
-        return;
+        SetDefaultConfig();
     }
 
     _cData.appRun           = (*_jsonObject)["runs"].toInteger();
@@ -83,6 +86,16 @@ void ConfigerExplorer::HandleConfig()
         _cData.groupId = 12861;
         _cData.groupName = tr("40а-20");
     }
+}
+
+void ConfigerExplorer::SetDefaultConfig()
+{
+    _cData.appRun           = 0;
+    _cData.interval         = act::Interval;
+    _cData.isAutoRunEnable  = false;
+    _cData.isNotifyEnable   = true;
+    _cData.groupId          = 12861;
+    _cData.groupName        = tr("40a-20");
 }
 
 ConfigData &ConfigerExplorer::GetConfigData()
