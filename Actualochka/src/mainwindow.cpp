@@ -196,14 +196,13 @@ void MainWindow::onResultActually(QNetworkReply *reply)
     if (reply->error() == QNetworkReply::NoError)
     {
         actuallyContent = ServerJsonParser::ParseJsonFromServer(reply, IEType::Actualochka).at(0);
+        tIcon->setVisible(true);
+        onActivatedSetContent(QSystemTrayIcon::Unknown);
     }
     else
     {
         actuallyContent = reply->errorString();
     }
-
-    tIcon->setVisible(true);
-    onActivatedSetContent(QSystemTrayIcon::Unknown);
 }
 
 //groupList = ServerJsonParser::ParseGroups(reply).values();

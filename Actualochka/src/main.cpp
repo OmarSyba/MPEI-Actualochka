@@ -12,7 +12,10 @@ int main(int argc, char *argv[])
     }
 
     QApplication a(argc, argv);
-    a.setApplicationName("Actualochka Getter");
+    a.setApplicationName("Actualochka");
+    a.setApplicationVersion("1.1.0");
+    a.setOrganizationName("poor mpei students");
+    a.setOrganizationDomain("mpei.space");
     a.setQuitOnLastWindowClosed(false);
     MainWindow w;
 
