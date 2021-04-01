@@ -8,6 +8,7 @@ ConfigerExplorer::ConfigerExplorer(QObject *parent) : QObject(parent)
 
 ConfigerExplorer::~ConfigerExplorer()
 {
+    SaveConfigIntoFile();
     if (_jsonObject)
         delete _jsonObject;
 }
@@ -39,7 +40,7 @@ void ConfigerExplorer::OpenJsonConfig()
 
 void ConfigerExplorer::SaveConfigIntoFile()
 {
-    if (_jsonObject)
+    if (!_jsonObject)
     {
         qDebug() << "Config doesn't exist! Can't save!";
         return;
@@ -49,7 +50,6 @@ void ConfigerExplorer::SaveConfigIntoFile()
     if (!config.open(QIODevice::WriteOnly))
     {
         qDebug() << "Config can't open to save!";
-        SetDefaultConfig();
     }
     else
     {
@@ -73,19 +73,20 @@ void ConfigerExplorer::HandleConfig()
         SetDefaultConfig();
     }
 
-    _cData.appRun           = (*_jsonObject)["runs"].toInteger();
-    _cData.interval         = (*_jsonObject)["interval"].toInteger();
+    _cData.appRun           = QString((*_jsonObject)["runs"].toString()).toUInt();
+    _cData.interval         = QString((*_jsonObject)["interval"].toString()).toUInt();
     _cData.isAutoRunEnable  = (*_jsonObject)["autorun"].toBool();
     _cData.isNotifyEnable   = (*_jsonObject)["notify"].toBool();
-    _cData.groupId          = (*_jsonObject)["groupId"].toInteger();
+    _cData.groupId          = QString((*_jsonObject)["groupId"].toString()).toUInt();
     _cData.groupName        = (*_jsonObject)["groupName"].toString();
 
     /* for backward compatibility */
     if (_cData.groupId == 0)
     {
         _cData.groupId = 12861;
-        _cData.groupName = tr("40а-20");
+        _cData.groupName = tr("ИЭоз-40а-20");
     }
+    AppRunsAdd();
 }
 
 void ConfigerExplorer::SetDefaultConfig()
@@ -140,7 +141,7 @@ QString ConfigerExplorer::GetGroupName() const
 
 void ConfigerExplorer::AppRunsAdd()
 {
-    _cData.appRun++;
+    ++_cData.appRun;
 }
 
 void ConfigerExplorer::SetInterval(quint64 ms)

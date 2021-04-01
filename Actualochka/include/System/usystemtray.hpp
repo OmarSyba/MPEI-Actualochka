@@ -17,7 +17,10 @@ public:
     QAction *GetCalendarAction()    const;
     QAction *GetExitAction()        const;
 
+    void setContextMenuTimer(qint64 time);
+
 private:
+    QMenu *toolTipTimer = nullptr;
     QVector<QAction *> actions;
     QMenu *systemTrayMenu = nullptr;
 };

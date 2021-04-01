@@ -9,9 +9,9 @@ CONFIG += c++17
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 CONFIG(debug, debug|release) {
-    DESTDIR = $$OUT_PWD/../../ActualochkaDebug
+    DESTDIR = $$OUT_PWD/../ActualochkaDebug
 } else {
-    DESTDIR = $$OUT_PWD/../../ActualochkaRelease
+    DESTDIR = $$OUT_PWD/../ActualochkaRelease
 }
 
 OPENSSL = C:\Other\Openssl
@@ -45,6 +45,7 @@ macx:OBJECTS_DIR = ../common/build/o/macx
 unix:OBJECTS_DIR = ../common/build/o/unix
 
 SOURCES += \
+    src/calendardatehandler.cpp \
     src/main.cpp \
     src/mainwindow.cpp \
     src/serverjsonparser.cpp \
@@ -57,6 +58,7 @@ HEADERS += \
     include/General/configerexplorer.hpp \
     include/General/general.hpp \
     include/Mainwindow/mainwindow.hpp \
+    include/System/calendardatehandler.hpp \
     include/System/serverjsonparser.hpp \
     include/System/usystemtray.hpp \
     include/System/utimerhandler.hpp \

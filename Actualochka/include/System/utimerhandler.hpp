@@ -16,14 +16,18 @@ public:
     void SetTimer(quint64 ms);
     void StartTimer() const;
 
+    void StopTimer() const;
+
     QTimer *GetTimer() const;
     QTimer *GetToolTipTimer() const;
 
     quint64 GetRemainingTimeTimer() const;
+    QTimer *GetCurrentTimer() const;
 
     virtual ~UTimerHandler();
 
 private:
+    quint64 interval;
     QTimer *timer = nullptr;
 };
 

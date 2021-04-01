@@ -13,8 +13,3 @@ QNetworkAccessManager* UWebHandler::AccsessUrl(QString turl)
     nam->get(QNetworkRequest(url));
     return nam;
 }
-
-void UWebHandler::ontimeout()
-{
-
-}
