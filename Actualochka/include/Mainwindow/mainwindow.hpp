@@ -31,6 +31,7 @@ private:
     void InitPrivateParameters();
     void SetUpSettingsTab();
     void SetUpConnects();
+    void TimerTimeOutConnect();
 
 signals:
     void quitapp();

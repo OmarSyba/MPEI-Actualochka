@@ -47,6 +47,7 @@ unix:OBJECTS_DIR = ../common/build/o/unix
 SOURCES += \
     src/main.cpp \
     src/mainwindow.cpp \
+    src/serverjsonparser.cpp \
     src/usystemtray.cpp \
     src/utimerhandler.cpp \
     src/uwebhandler.cpp \
@@ -56,6 +57,7 @@ HEADERS += \
     include/General/configerexplorer.hpp \
     include/General/general.hpp \
     include/Mainwindow/mainwindow.hpp \
+    include/System/serverjsonparser.hpp \
     include/System/usystemtray.hpp \
     include/System/utimerhandler.hpp \
     include/System/uwebhandler.hpp

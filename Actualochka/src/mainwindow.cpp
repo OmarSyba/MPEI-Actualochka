@@ -49,10 +49,6 @@ void MainWindow::InitPrivateParameters()
 
     SetUpSettingsTab();
     SetUpConnects();
-
-    QString url = "https://mpei-server.herokuapp.com/api/getSchedule";
-    web->AccsessUrl(url);
-
 }
 
 void MainWindow::SetUpSettingsTab()
@@ -81,4 +77,9 @@ void MainWindow::SetUpConnects()
     {
         emit quitapp();
     });
+}
+
+void MainWindow::TimerTimeOutConnect()
+{
+    connect(timer, &QNetworkReply::finished)
 }
