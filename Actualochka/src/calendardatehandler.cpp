@@ -5,7 +5,6 @@
 CalendarDateHandler::CalendarDateHandler(QObject *parent) :
                                 QObject(parent)
 {
-
 }
 
 CalendarDateHandler::CalendarDateHandler(QCalendarWidget *tcalendar, QLabel *label1, QLabel *label2, QLabel *label3) :
