@@ -10,6 +10,7 @@ UTimerHandler::UTimerHandler(quint64 ms)
     timer = new QTimer(this);
     timer->setInterval(ms);
     interval = ms;
+    timer->start();
 }
 
 void UTimerHandler::SetTimer(quint64 ms)

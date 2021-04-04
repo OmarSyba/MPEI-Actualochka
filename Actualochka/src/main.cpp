@@ -20,12 +20,11 @@ int main(int argc, char *argv[])
     MainWindow w;
 
     QObject::connect(&w, &MainWindow::quitapp, &a, &QApplication::quit);
-//    QObject::connect(&w, &MainWindow::FoundedNewVersion, [&]()
-//    {
-//        QProcess P(&w);
-//        QString Path = QString(QDir().currentPath() + "/maintenancetool.exe");
-//        P.start(Path);
-//        P.waitForFinished(-1);
-//    });
+    QObject::connect(&w, &MainWindow::newversion, [&]()
+    {
+        QProcess P;
+        QString Path = QString(QDir().currentPath() + "/maintenancetool.exe");
+        P.execute(Path);
+    });
     return a.exec();
 }

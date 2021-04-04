@@ -141,7 +141,6 @@ void MainWindow::onSpinBoxValueChanged(int value)
     timer->StopTimer();
     timer->SetTimer(value * act::oneHour);
     timer->StartTimer();
-    qDebug() << timer->GetRemainingTimeTimer() << value * act::oneHour;
 }
 
 void MainWindow::onSysTrayActivated(QSystemTrayIcon::ActivationReason reason)
@@ -149,12 +148,10 @@ void MainWindow::onSysTrayActivated(QSystemTrayIcon::ActivationReason reason)
     switch (reason)
     {
         break;
-    case QSystemTrayIcon::Context:
-        sysTray->setContextMenuTimer(timer->GetRemainingTimeTimer());
-        break;
     case QSystemTrayIcon::Trigger:
-        this->show();
+        show();
         break;
+    case QSystemTrayIcon::Context:
     case QSystemTrayIcon::MiddleClick:
     case QSystemTrayIcon::DoubleClick:
     case QSystemTrayIcon::Unknown:
@@ -169,8 +166,8 @@ void MainWindow::InitPrivateParameters()
 
     sysTray = new USystemTray(this);
     timer = new UTimerHandler(config->GetInterval());
+    qDebug() << timer->GetRemainingTimeTimer();
     web = new UWebHandler(this);
-
     calendar = new CalendarDateHandler(ui->calendarWidget, ui->color1, ui->color2, ui->color3);
 
     SetUpSettingsTab();
@@ -191,9 +188,11 @@ void MainWindow::GetListOfGroups(QNetworkReply *reply)
     {
         content.Groups = ServerJsonParser::ParseGroups(reply);
         ui->comboBoxGroup->addItems(content.Groups.keys());
-        for (quint32 idx = 0; idx < content.Groups.keys().length(); ++idx)
+        auto containerKeys = content.Groups.keys();
+        auto containerValues = content.Groups.values();
+        for (quint32 idx = 0; idx < containerKeys.length(); ++idx)
         {
-            if (config->GetGroupId() == content.Groups.values().at(idx))
+            if (config->GetGroupId() == containerValues.at(idx))
             {
                 ui->comboBoxGroup->setCurrentIndex(idx);
                 break;
@@ -201,6 +200,17 @@ void MainWindow::GetListOfGroups(QNetworkReply *reply)
         }
     }
     reply->deleteLater();
+}
+
+void MainWindow::onResultCheckForUpdate(QNetworkReply *reply)
+{
+     QString version = "v" + ServerJsonParser::ParseVersion(reply);
+     if (version != act::CurrnetVersion)
+     {
+         qDebug() << version << act::CurrnetVersion;
+         emit newversion();
+     }
+     reply->deleteLater();
 }
 
 void MainWindow::SetUpConnects()
@@ -226,6 +236,11 @@ void MainWindow::SetUpConnects()
     {
         ui->tabWidget->setCurrentIndex(0);
         show();
+    });
+    connect(ui->checkupdateButton, &QPushButton::clicked, this, [&]()
+    {
+        auto namVersion = web->AccsessUrl(act::MpeiVersion);
+        connect(namVersion, SIGNAL(finished(QNetworkReply*)), this, SLOT(onResultCheckForUpdate(QNetworkReply*)));
     });
     connect(sysTray, &QSystemTrayIcon::activated, this, &MainWindow::onSysTrayActivated);
     connect(timer->GetCurrentTimer(), &QTimer::timeout, this, &MainWindow::MakeReceive);

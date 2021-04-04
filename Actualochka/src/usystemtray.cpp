@@ -4,8 +4,8 @@ USystemTray::USystemTray(QObject *parent) : QSystemTrayIcon(parent)
 {
     setIcon(QIcon(":/icon/favicon.ico"));
     systemTrayMenu = new QMenu();
+    tooltip = new QMenu();
 
-    toolTipTimer = new QMenu();
     QAction *exit           = new QAction(tr("Выход"));
     QAction *settingsTab    = new QAction(tr("Настройки"));
     QAction *calendarTab    = new QAction(tr("Календарь"));
@@ -19,15 +19,14 @@ USystemTray::USystemTray(QObject *parent) : QSystemTrayIcon(parent)
     actions.append(calendarTab);
     actions.append(settingsTab);
     actions.append(exit);
-
     show();
 }
 
 USystemTray::~USystemTray()
 {
     actions.clear();
-    if (toolTipTimer)
-        delete toolTipTimer;
+    if (tooltip)
+        delete tooltip;
     if (systemTrayMenu)
         delete systemTrayMenu;
 }
@@ -45,9 +44,4 @@ QAction *USystemTray::GetCalendarAction() const
 QAction *USystemTray::GetExitAction() const
 {
     return actions.at(2);
-}
-
-void USystemTray::setContextMenuTimer(qint64 time)
-{
-
 }

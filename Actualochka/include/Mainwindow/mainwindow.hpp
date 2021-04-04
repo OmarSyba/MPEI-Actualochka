@@ -40,6 +40,7 @@ public slots:
     void onResultActually(QNetworkReply *reply);
     void onResultScheduleMonth(QNetworkReply *reply);
     void GetListOfGroups(QNetworkReply *reply);
+    void onResultCheckForUpdate(QNetworkReply *reply);
     void onAutoRunChanged(int state);
     void onNotifyChanged(bool state);
     void onComboBoxActivated(int index);
@@ -54,6 +55,7 @@ private:
 
 signals:
     void quitapp();
+    void newversion();
 
 private:
     Content content;
