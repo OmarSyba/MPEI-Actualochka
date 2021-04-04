@@ -1,386 +1,105 @@
 #include "../include/Mainwindow/mainwindow.hpp"
-#include "../include/General/confighandler.hpp"
 #include "ui_mainwindow.h"
 
-#include <QThread>
 #include <QKeyEvent>
 #include <QCheckBox>
+#include <QTimer>
 #include <QSettings>
-#include <QDesktopServices>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-
-    SetUpConfig();
-    SetUpSystemTrayIcon();
-    SetUpTimer();
-
-    connect(ui->UpdateButton, &QPushButton::clicked, this, [&]()
-    {
-        auto nam = NetworkReplyer::AccessUrl(act::MpeiActuallity);
-        connect(nam, SIGNAL(finished(QNetworkReply*)), this, SLOT(onResultWithOutTray(QNetworkReply*)));
-    });
+    InitWindowParameters();
+    InitPrivateParameters();
+    MakeReceive();
 }
 
 MainWindow::~MainWindow()
 {
-    config->WriteJson(config->GetJson());
-
-    for (auto& x : this->actions)
-    {
-        delete x;
-    }
-    delete context;
-    delete tIcon;
+    delete calendar;
+    delete web;
     delete timer;
+    delete sysTray;
     delete config;
     delete ui;
 }
 
-void MainWindow::InitParams()
+void MainWindow::InitWindowParameters()
 {
-    ui->versionLabel->setText(act::CurrnetVersion);
-
-    setWindowTitle("Актуалочка");
+    setWindowTitle(tr("Актуалочка"));
     setFixedSize(QSize(640, 480));
-
-    if (config->isNotify())
-    {
-        ui->radioButton->setChecked(true);
-        ui->spinBox->setReadOnly(false);
-    }
-    else
-    {
-        ui->radioButton->setChecked(false);
-        ui->spinBox->setReadOnly(true);
-    }
 
     ui->tabWidget->setTabText(0, tr("Информация"));
     ui->tabWidget->setTabText(1, tr("Настройки"));
     ui->tabWidget->setTabText(2, tr("Календарь"));
-    ui->textEditShedule->setReadOnly(true);
-
-    auto time = ((config->GetInterval() / 1000)/ 60) / 60;
-    if (ui->spinBox)
-        ui->spinBox->setValue(time);
-
-    bool isChecked = config->isAutoRunEnable();
-    if (ui->checkBox)
-        ui->checkBox->setChecked(isChecked);
-}
-
-void MainWindow::onActivatedSetContent(QSystemTrayIcon::ActivationReason reason)
-{
-    InitParams();
-    switch (reason)
-    {
-    case QSystemTrayIcon::Unknown:
-        if (config->isNotify())
-        {
-            tIcon->showMessage(QString("Актуалочка"), actuallyContent, QSystemTrayIcon::MessageIcon(QSystemTrayIcon::NoIcon));
-        }
-        ui->textEdit->setText(actuallyContent);
-        break;
-    case QSystemTrayIcon::Context:
-        tIcon->setContextMenu(context);
-        break;
-    case QSystemTrayIcon::Trigger:
-        this->show();
-        break;
-    case QSystemTrayIcon::MiddleClick:
-    case QSystemTrayIcon::DoubleClick:
-    default:
-        this->show();
-    }
-}
-
-void MainWindow::onActivatedSetSchedule()
-{
-    ui->textEditShedule->clear();
-    for (auto&x : scheduleContent)
-    {
-        QString ExistingText = ui->textEditShedule->toPlainText();
-        if (!ExistingText.isEmpty())
-        {
-            ui->textEditShedule->setText(ExistingText + "\n\n" + x);
-        }
-        else
-        {
-            ui->textEditShedule->setText(x);
-        }
-    }
-}
-
-void MainWindow::onActivatedSetCalendar()
-{
-    auto calendar = ui->calendarWidget;
-    calendar->setStyleSheet("QTableView{selection-background-color: #222;}");
-    calendar->setMinimumDate(QDate().currentDate().addDays(-1));    
-    calendar->setMaximumDate(scheduleCalendar.last().date.date());
-
-    QTextCharFormat form = QTextCharFormat();
-    for (QDate date = calendar->minimumDate(); date != calendar->maximumDate(); date = date.addDays(1))
-    {
-        form.setBackground(QBrush(QColor(255, 255, 255)));
-        form.setToolTip("");
-        calendar->setDateTextFormat(date, form);
-    }
-
-    for (auto &x : scheduleCalendar)
-    {
-        if (x.lessionType == tr("Лекция"))
-        {
-            form.setBackground(QBrush(QColor("#444C55")));
-        }
-        else if (x.lessionType == tr("Практическое занятие"))
-        {
-            form.setBackground(QBrush(QColor("#2D333B")));
-        }
-        else
-        {
-            form.setBackground(QBrush(QColor("#22272E")));
-        }
-        form.setToolTip(x.lession + " - " + x.lessionType);
-        form.setForeground(QBrush(QColor(255, 255, 255)));
-        calendar->setDateTextFormat(x.date.date(), form);
-    }
-    ui->color1->setText(tr("Лекция"));
-    ui->color2->setText(tr("Практическое занятие"));
-    ui->color3->setText(tr("Лабораторное занятие"));
-
-    ui->color1->setStyleSheet("QLabel { background-color : #444C55; color : white }");
-    ui->color2->setStyleSheet("QLabel { background-color : #2D333B; color : white }");
-    ui->color3->setStyleSheet("QLabel { background-color : #22272E; color : white }");
-}
-
-void MainWindow::MessageClicked()
-{
-    this->show();
-    InitParams();
-}
-
-void MainWindow::SetToolTipTime()
-{
-    uint64_t remaingTime = timer->remainingTime() / 60000;
-    QString suffix = "минут";
-
-    if (remaingTime > 60)
-    {
-        remaingTime /= 60;
-        suffix = "часов";
-    }
-
-    if (tIcon)
-    {
-        tIcon->setToolTip(QString::number(
-            remaingTime) == QString::number(0) ?
-            "Осталось " + QString::number(config->GetInterval() / (60 * 1000 * 60)) + " " + "часов" :
-            "Осталось " + QString::number(remaingTime) + " " + suffix
-            );
-    }
+    ui->tabWidget->setCurrentIndex(0);
+    ui->labelVersion->setText(act::CurrnetVersion);
 }
 
 void MainWindow::keyPressEvent(QKeyEvent *event)
 {
     if (event->key() == Qt::Key_Escape)
-    {
         close();
-    }
 }
 
 void MainWindow::onResultActually(QNetworkReply *reply)
 {
-    if (reply->error() == QNetworkReply::NoError)
-    {
-        actuallyContent = ServerJsonParser::ParseJsonFromServer(reply, IEType::Actualochka).at(0);
-    }
-    else
-    {
-        actuallyContent = reply->errorString();
-    }
+    content.Actuallity = reply->error() == QNetworkReply::NoError ?
+                ServerJsonParser::ParseJsonFromServer(reply, EReply_Type::Actualochka).at(0) :
+                reply->errorString();
 
-    tIcon->setVisible(true);
-    onActivatedSetContent(QSystemTrayIcon::Unknown);
+    if (config->isNotifyEnabled())
+    {
+        sysTray->showMessage(tr("Актуалочка"), content.Actuallity, QSystemTrayIcon::MessageIcon(QSystemTrayIcon::NoIcon));
+    }
+    ui->textEditActuallity->setText(content.Actuallity);
+    reply->deleteLater();
 }
-
-//groupList = ServerJsonParser::ParseGroups(reply).values();
 
 void MainWindow::onResultSchedule(QNetworkReply *reply)
 {
-    if (reply->error() == QNetworkReply::NoError)
+    content.ScheduleWeek = reply->error() == QNetworkReply::NoError ?
+                ServerJsonParser::ParseJsonFromServer(reply, EReply_Type::ScheduleWeek):
+                QVector<QString>(reply->errorString());
+
+    ui->textEditShedule->clear();
+    for (auto&x : content.ScheduleWeek)
     {
-        scheduleContent = ServerJsonParser::ParseJsonFromServer(reply, IEType::Schedule);
+        QString ExistingText = ui->textEditShedule->toPlainText();
+        ui->textEditShedule->setText(!ExistingText.isEmpty() ? ExistingText + "\n\n" + x : x);
     }
-    else
-    {
-        scheduleContent[0] = reply->errorString();
-    }
-    onActivatedSetSchedule();
+    reply->deleteLater();
 }
 
 void MainWindow::onResultScheduleMonth(QNetworkReply *reply)
 {
     if (reply->error() == QNetworkReply::NoError)
     {
-        scheduleCalendar = ServerJsonParser::ParseJsonMonth(reply);
-        onActivatedSetCalendar();
+        content.ScheduleMonth = ServerJsonParser::ParseJsonMonth(reply);
+        calendar->SetScheduleMonth(content.ScheduleMonth);
+        calendar->SetCalendarStyleByLessions();
     }
-    else
+    reply->deleteLater();
+}
+
+void MainWindow::onAutoRunChanged(int state)
+{
+    if (state == Qt::Checked)
     {
-        qDebug() << "Can't get schedule at month";
-    }
-}
-
-void MainWindow::onResultWithOutTray(QNetworkReply *reply)
-{
-    actuallyContent = ServerJsonParser::ParseJsonFromServer(reply, IEType::Actualochka).at(0);
-    ui->textEdit->setText(actuallyContent);
-}
-
-void MainWindow::onResultCheckUpdate(QNetworkReply *reply)
-{
-    QString version = "v" + ServerJsonParser::ParseVersion(reply);
-    if (version != act::CurrnetVersion)
-    {
-        qDebug() << version << act::CurrnetVersion;
-        emit FoundedNewVersion();
-    }
-}
-
-void MainWindow::GetListGroups()
-{
-    auto namS = NetworkReplyer::AccessUrl(act::MpeiGroupList);
-    connect(namS, SIGNAL(finished(QNetworkReply*)), this, SLOT(GetListOfGroups(QNetworkReply*)));
-}
-
-void MainWindow::GetListOfGroups(QNetworkReply *reply)
-{
-    if (reply->error() == QNetworkReply::NoError)
-    {
-        groups = ServerJsonParser::ParseGroups(reply);
-        ui->comboBoxGroup->addItems(groups.keys());
-        for (int idx = 0; idx < groups.keys().length(); ++idx)
-        {
-            if (config->GetGroupName() == groups.keys().at(idx))
-            {
-                ui->comboBoxGroup->setCurrentIndex(idx);
-                break;
-            }
-        }
-    }
-}
-
-inline void MainWindow::SetUpTimer()
-{
-    timer = new QTimer(this);
-
-    timer->setInterval(1);
-    timer->start();
-
-    toolTipPpdater = new QTimer(this);
-    toolTipPpdater->setInterval(60 * 1000);
-
-    if (config->isNotify())
-    {
-        toolTipPpdater->start();
-    }
-
-    GetListGroups();
-
-    connect(toolTipPpdater, &QTimer::timeout, this, &MainWindow::SetToolTipTime);
-    connect(timer, &QTimer::timeout, this, [=]()
-    {
-        groupUrl = act::MpeiSchedule + "?group=" + QString::number(config->GetGroupId());
-
-        qDebug() << groupUrl << config->GetGroupId() << config->GetGroupName();
-
-        QString ScheduleMonthUrl = act::MpeiSchedule + "?group=" + QString::number(config->GetGroupId()) + "&start=" +
-                QDate().currentDate().toString("yyyy.MM.dd") +
-                "&finish=" + QDate().currentDate().addMonths(3).toString("yyyy.MM.dd");
-        auto namA = NetworkReplyer::AccessUrl(act::MpeiActuallity);
-        auto namS = NetworkReplyer::AccessUrl(groupUrl);
-        auto namM = NetworkReplyer::AccessUrl(ScheduleMonthUrl);
-
-        connect(namA, SIGNAL(finished(QNetworkReply*)), this, SLOT(onResultActually(QNetworkReply*)));
-        connect(namS, SIGNAL(finished(QNetworkReply*)), this, SLOT(onResultSchedule(QNetworkReply*)));
-        connect(namM, SIGNAL(finished(QNetworkReply*)), this, SLOT(onResultScheduleMonth(QNetworkReply*)));
-        timer->setInterval(config->GetInterval());
-    });
-
-    SetToolTipTime();
-}
-
-inline void MainWindow::SetUpSystemTrayIcon()
-{
-    tIcon = new QSystemTrayIcon(this);
-    tIcon->setIcon(QIcon(":/icon/favicon.ico"));
-
-    context = new QMenu();
-    QAction *exit = new QAction(context);
-    QAction *settingTab = new QAction(context);
-    QAction *calendarTab = new QAction(context);
-
-    exit->setText(tr("Выход"));
-    settingTab->setText(tr("Настройки"));
-    calendarTab->setText(tr("Календарь"));
-
-    context->addAction(calendarTab);
-    context->addAction(settingTab);
-    context->addSeparator();
-    context->addAction(exit);
-
-    connect(exit, &QAction::triggered, this, [&](){
-        emit ForceClose();
-    });
-
-    connect(settingTab, &QAction::triggered, this, [&](){
-        InitParams();
-        showNormal();
-        activateWindow();
-        ui->tabWidget->setCurrentIndex(1);
-    });
-
-    connect(calendarTab, &QAction::triggered, this, [&](){
-        InitParams();
-        showNormal();
-        activateWindow();
-        ui->tabWidget->setCurrentIndex(2);
-    });
-    connect(tIcon, &QSystemTrayIcon::messageClicked, this, &MainWindow::MessageClicked);
-    connect(tIcon, &QSystemTrayIcon::activated, this, &MainWindow::onActivatedSetContent);
-
-    actions.append(exit);
-    actions.append(settingTab);
-    actions.append(calendarTab);
-}
-
-void MainWindow::SetUpConfig()
-{
-    config = new SConfig();
-    configJson = config->OpenConfigJson();
-    config->HandleConfigJson(configJson);
-    config->WriteJson(config->GetJson());
-}
-
-void MainWindow::on_checkBox_stateChanged(int arg1)
-{
-    if (arg1 == Qt::CheckState::Checked)
-    {
-        config->SetAutoRun(true);
-        config->WriteJson(config->GetJson());
+        config->SetAutoRunEnabled(true);
+        config->SaveConfigIntoFile();
 #ifdef Q_OS_WIN32
         QSettings settings("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Run", QSettings::NativeFormat);
         settings.setValue(act::AppName, QDir::toNativeSeparators(QCoreApplication::applicationFilePath()));
         settings.sync();
 #endif
     }
-    if (arg1 == Qt::CheckState::Unchecked)
+    else
     {
-        config->SetAutoRun(false);
-        config->WriteJson(config->GetJson());
+        config->SetAutoRunEnabled(false);
+        config->SaveConfigIntoFile();
 #ifdef Q_OS_WIN32
         QSettings settings("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Run", QSettings::NativeFormat);
         settings.remove(act::AppName);
@@ -388,74 +107,165 @@ void MainWindow::on_checkBox_stateChanged(int arg1)
     }
 }
 
-void MainWindow::on_spinBox_valueChanged(int arg1)
+void MainWindow::onNotifyChanged(bool state)
 {
-    if (arg1 == 0)
-    {
-        timer->stop();
-        config->SetInterval(Interval);
-        config->WriteJson(config->GetJson());
-        return;
-    }
-
-    uint64_t interval = arg1 * 60 * 60 * 1000;
-
-    config->SetInterval(interval);
-    config->WriteJson(config->GetJson());
-
-    timer->stop();
-    timer->setInterval(interval);
-    timer->start();
+    config->SetNotifyEnabled(state);
+    ui->spinBoxInterval->setReadOnly(!state);
+    !state ? timer->StopTimer() : timer->StartTimer();
 }
 
-void MainWindow::on_pushButton_clicked()
-{
-    config->WriteJson(config->GetJson());
-}
-
-void MainWindow::on_checkupdateButton_clicked()
-{
-    auto reply = NetworkReplyer::AccessUrl(act::MpeiVersion);
-    connect(reply, SIGNAL(finished(QNetworkReply*)), this, SLOT(onResultCheckUpdate(QNetworkReply*)));
-}
-
-void MainWindow::on_radioButton_toggled(bool checked)
-{
-    if (!checked)
-    {
-        config->SetNotify(false);
-        ui->spinBox->setReadOnly(true);
-        timer->stop();
-        toolTipPpdater->stop();
-    }
-    else
-    {
-        config->SetNotify(true);
-        ui->spinBox->setReadOnly(false);
-        timer->setInterval(config->GetInterval());
-        timer->start();
-        toolTipPpdater->start();
-    }
-}
-
-void MainWindow::on_comboBoxGroup_activated(int index)
+void MainWindow::onComboBoxActivated(int index)
 {
     QString title = ui->comboBoxGroup->itemText(index);
-    quint32 id = groups[title];
+    quint32 id = content.Groups[title];
 
     config->SetGroupName(title);
     config->SetGroupId(id);
-    config->WriteJson(config->GetJson());
 
     QString ScheduleShort = act::MpeiSchedule + "?group=" + QString::number(id);
 
     QString ScheduleMonthUrl = act::MpeiSchedule + "?group=" + QString::number(id) + "&start=" +
-            QDate().currentDate().toString("yyyy.MM.dd") +
-            "&finish=" + QDate().currentDate().addMonths(3).toString("yyyy.MM.dd");
+       QDate().currentDate().toString("yyyy.MM.dd") +
+       "&finish=" + QDate().currentDate().addMonths(3).toString("yyyy.MM.dd");
 
-    auto namA = NetworkReplyer::AccessUrl(ScheduleShort);
-    auto namS = NetworkReplyer::AccessUrl(ScheduleMonthUrl);
+    auto namA = web->AccsessUrl(ScheduleShort);
+    auto namS = web->AccsessUrl(ScheduleMonthUrl);
 
     connect(namA, SIGNAL(finished(QNetworkReply*)), this, SLOT(onResultSchedule(QNetworkReply*)));
     connect(namS, SIGNAL(finished(QNetworkReply*)), this, SLOT(onResultScheduleMonth(QNetworkReply*)));
+}
+
+void MainWindow::onSpinBoxValueChanged(int value)
+{
+    config->SetInterval(value * act::oneHour);
+    timer->StopTimer();
+    timer->SetTimer(value * act::oneHour);
+    timer->StartTimer();
+}
+
+void MainWindow::onSysTrayActivated(QSystemTrayIcon::ActivationReason reason)
+{
+    switch (reason)
+    {
+        break;
+    case QSystemTrayIcon::Trigger:
+        show();
+        break;
+    case QSystemTrayIcon::Context:
+    case QSystemTrayIcon::MiddleClick:
+    case QSystemTrayIcon::DoubleClick:
+    case QSystemTrayIcon::Unknown:
+        break;
+    }
+}
+
+void MainWindow::InitPrivateParameters()
+{
+    config = new ConfigerExplorer(this);
+    config->OpenJsonConfig();
+
+    sysTray = new USystemTray(this);
+    timer = new UTimerHandler(config->GetInterval());
+    qDebug() << timer->GetRemainingTimeTimer();
+    web = new UWebHandler(this);
+    calendar = new CalendarDateHandler(ui->calendarWidget, ui->color1, ui->color2, ui->color3);
+
+    SetUpSettingsTab();
+    SetUpConnects();
+}
+
+void MainWindow::SetUpSettingsTab()
+{
+    ui->checkBoxAutoRun->setChecked(config->isAutoRunEnabled());
+    ui->radioButtonNotify->setChecked(config->isNotifyEnabled());
+    ui->spinBoxInterval->setValue(config->GetInterval() / act::oneHour);
+    ui->spinBoxInterval->setReadOnly(!config->isNotifyEnabled());
+}
+
+void MainWindow::GetListOfGroups(QNetworkReply *reply)
+{
+    if (reply->error() == QNetworkReply::NoError)
+    {
+        content.Groups = ServerJsonParser::ParseGroups(reply);
+        ui->comboBoxGroup->addItems(content.Groups.keys());
+        auto containerKeys = content.Groups.keys();
+        auto containerValues = content.Groups.values();
+        for (quint32 idx = 0; idx < containerKeys.length(); ++idx)
+        {
+            if (config->GetGroupId() == containerValues.at(idx))
+            {
+                ui->comboBoxGroup->setCurrentIndex(idx);
+                break;
+            }
+        }
+    }
+    reply->deleteLater();
+}
+
+void MainWindow::onResultCheckForUpdate(QNetworkReply *reply)
+{
+     QString version = "v" + ServerJsonParser::ParseVersion(reply);
+     if (version != act::CurrnetVersion)
+     {
+         qDebug() << version << act::CurrnetVersion;
+         emit newversion();
+     }
+     reply->deleteLater();
+}
+
+void MainWindow::SetUpConnects()
+{
+    connect(sysTray->GetSettingsAction(), &QAction::triggered, this, [&]()
+    {
+        ui->tabWidget->setCurrentIndex(1);
+        show();
+    });
+
+    connect(sysTray->GetCalendarAction(), &QAction::triggered, this, [&]()
+    {
+        ui->tabWidget->setCurrentIndex(2);
+        show();
+    });
+
+    connect(sysTray->GetExitAction(), &QAction::triggered, this, [&]()
+    {
+        emit quitapp();
+    });
+
+    connect(sysTray, &USystemTray::messageClicked, this, [&]()
+    {
+        ui->tabWidget->setCurrentIndex(0);
+        show();
+    });
+    connect(ui->checkupdateButton, &QPushButton::clicked, this, [&]()
+    {
+        auto namVersion = web->AccsessUrl(act::MpeiVersion);
+        connect(namVersion, SIGNAL(finished(QNetworkReply*)), this, SLOT(onResultCheckForUpdate(QNetworkReply*)));
+    });
+    connect(sysTray, &QSystemTrayIcon::activated, this, &MainWindow::onSysTrayActivated);
+    connect(timer->GetCurrentTimer(), &QTimer::timeout, this, &MainWindow::MakeReceive);
+    connect(ui->UpdateButton, &QPushButton::clicked, this, &MainWindow::MakeReceive);
+    connect(ui->checkBoxAutoRun, SIGNAL(stateChanged(int)), this, SLOT(onAutoRunChanged(int)));
+    connect(ui->radioButtonNotify, SIGNAL(toggled(bool)), this, SLOT(onNotifyChanged(bool)));
+    connect(ui->pushButtonSave, &QPushButton::clicked, this, [&]() { config->SaveConfigIntoFile(); });
+    connect(ui->comboBoxGroup, SIGNAL(activated(int)), this, SLOT(onComboBoxActivated(int)));
+    connect(ui->spinBoxInterval, SIGNAL(valueChanged(int)), this, SLOT(onSpinBoxValueChanged(int)));
+}
+
+void MainWindow::MakeReceive()
+{
+    QString groupUrl = act::MpeiSchedule + "?group=" + QString::number(config->GetGroupId());
+    QString ScheduleMonthUrl = act::MpeiSchedule + "?group=" + QString::number(config->GetGroupId()) + "&start=" +
+                    QDate().currentDate().toString("yyyy.MM.dd") +
+                    "&finish=" + QDate().currentDate().addMonths(3).toString("yyyy.MM.dd");
+
+    auto namActuallity = web->AccsessUrl(act::MpeiActuallity);
+    auto namScheduleWeek = web->AccsessUrl(groupUrl);
+    auto namMonth = web->AccsessUrl(ScheduleMonthUrl);
+    auto namGroups = web->AccsessUrl(act::MpeiGroupList);
+
+    connect(namActuallity, SIGNAL(finished(QNetworkReply*)), this, SLOT(onResultActually(QNetworkReply*)));
+    connect(namScheduleWeek, SIGNAL(finished(QNetworkReply*)), this, SLOT(onResultSchedule(QNetworkReply*)));
+    connect(namMonth, SIGNAL(finished(QNetworkReply*)), this, SLOT(onResultScheduleMonth(QNetworkReply*)));
+    connect(namGroups, SIGNAL(finished(QNetworkReply*)), this, SLOT(GetListOfGroups(QNetworkReply*)));
 }

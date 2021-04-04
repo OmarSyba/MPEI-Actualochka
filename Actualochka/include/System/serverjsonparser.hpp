@@ -2,15 +2,17 @@
 #define SERVERJSONPARSER_HPP
 
 #include <QObject>
+#include <QDate>
+
 #include <QtNetwork/QNetworkReply>
-#include <QtNetwork/QNetworkAccessManager>
-#include <QJsonDocument>
+
 #include <QJsonObject>
+#include <QJsonDocument>
 #include <QJsonArray>
 
-enum IEType
+enum EReply_Type
 {
-    Schedule = 0,
+    ScheduleWeek = 0,
     Actualochka = 1
 };
 
@@ -28,7 +30,7 @@ public:
     ServerJsonParser() = delete;
 
     static QMap<QString, quint32> ParseGroups(QNetworkReply *reply);
-    static QVector<QString> ParseJsonFromServer(QNetworkReply *reply, IEType type);
+    static QVector<QString> ParseJsonFromServer(QNetworkReply *reply, EReply_Type type);
     static QVector<CellData> ParseJsonMonth(QNetworkReply *reply);
     static QString ParseVersion(QNetworkReply *reply);
 private:

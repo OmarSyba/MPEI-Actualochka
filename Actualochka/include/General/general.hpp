@@ -13,7 +13,10 @@ static QFile logfile(logdir + "/Act.log");
 
 namespace act
 {
-    static QString CurrnetVersion = "1.1.0";
+    [[maybe_unused]] static constexpr quint64 oneHour = 1000 * 60 * 60;
+    [[maybe_unused]]static quint64 Interval = 2880000;
+
+    static QString CurrnetVersion = "v1.1.1b";
     static QString MpeiActuallity = "https://mpei-server.herokuapp.com/api/getActuality";
     static QString MpeiSchedule = "https://mpei-server.herokuapp.com/api/getSchedule";
     static QString MpeiVersion = "https://mpei-win.herokuapp.com/version";
