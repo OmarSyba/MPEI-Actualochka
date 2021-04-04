@@ -1,24 +1,22 @@
-#include "../include/Receiver/serverjsonparser.hpp"
-#include <QVector>
+#include "../include/System/serverjsonparser.hpp"
 
 QMap<QString, quint32> ServerJsonParser::ParseGroups(QNetworkReply *reply)
 {
-    auto jsonArray = QJsonDocument::fromJson(QString(reply->readAll()).toUtf8()).object()["studentsGroups"].toArray();
-
-    return ParseJsonGroups(jsonArray);
+    auto arrayJson = QJsonDocument::fromJson(QString(reply->readAll()).toUtf8()).object()["studentsGroups"].toArray();
+    return ParseJsonGroups(arrayJson);
 }
 
-QVector<QString> ServerJsonParser::ParseJsonFromServer(QNetworkReply *reply, IEType type)
+QVector<QString> ServerJsonParser::ParseJsonFromServer(QNetworkReply *reply, EReply_Type type)
 {
     QVector<QString> result;
     switch (type)
     {
-    case IEType::Actualochka:
+    case EReply_Type::Actualochka:
         result.append(QJsonDocument::fromJson(
                     QString(reply->readAll()).toUtf8())
                     .object()["actuality"].toObject()["content"].toString());
         break;
-    case IEType::Schedule:
+    case EReply_Type::ScheduleWeek:
         auto jsonArray = QJsonDocument::fromJson(
                     QString(reply->readAll()).toUtf8())
                     .object()["schedule"].toArray();
@@ -26,32 +24,6 @@ QVector<QString> ServerJsonParser::ParseJsonFromServer(QNetworkReply *reply, IET
         break;
     }
     return result;
-}
-
-QVector<QString> ServerJsonParser::ParseJson(QJsonArray &tjsonArray)
-{
-    QVector<QString> schedule;
-
-    for (auto&& x : tjsonArray)
-    {
-        QJsonObject obj = x.toObject();
-        QString dayOfWeekString     = obj["dayOfWeekString"].toString();
-        QString discipline          = obj["discipline"].toString();
-        QString date                = obj["date"].toString();
-        QString kindOfWork          = obj["kindOfWork"].toString();
-        QString beginLesson         = obj["beginLesson"].toString();
-        QString endLesson           = obj["endLesson"].toString();
-        QString lecturer            = obj["lecturer"].toString();
-
-        QString resultString = "[" + dayOfWeekString + "] "         +
-                discipline + " - " + date + "\n"                    +
-                " - " + kindOfWork + "\n"                          +
-                " - " + beginLesson + " - " + endLesson + "\n"     +
-                " - " + lecturer;
-
-        schedule.append(resultString);
-    }
-    return schedule;
 }
 
 QVector<CellData> ServerJsonParser::ParseJsonMonth(QNetworkReply *reply)
@@ -96,4 +68,30 @@ QMap<QString, quint32> ServerJsonParser::ParseJsonGroups(QJsonArray &tjsonArray)
     }
 
     return result;
+}
+
+QVector<QString> ServerJsonParser::ParseJson(QJsonArray &tjsonArray)
+{
+    QVector<QString> schedule;
+
+    for (auto&& x : tjsonArray)
+    {
+        QJsonObject obj = x.toObject();
+        QString dayOfWeekString     = obj["dayOfWeekString"].toString();
+        QString discipline          = obj["discipline"].toString();
+        QString date                = obj["date"].toString();
+        QString kindOfWork          = obj["kindOfWork"].toString();
+        QString beginLesson         = obj["beginLesson"].toString();
+        QString endLesson           = obj["endLesson"].toString();
+        QString lecturer            = obj["lecturer"].toString();
+
+        QString resultString = "[" + dayOfWeekString + "] "         +
+                discipline + " - " + date + "\n"                    +
+                " - " + kindOfWork + "\n"                          +
+                " - " + beginLesson + " - " + endLesson + "\n"     +
+                " - " + lecturer;
+
+        schedule.append(resultString);
+    }
+    return schedule;
 }

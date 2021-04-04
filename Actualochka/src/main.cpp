@@ -13,19 +13,18 @@ int main(int argc, char *argv[])
 
     QApplication a(argc, argv);
     a.setApplicationName("Actualochka");
-    a.setApplicationVersion("1.1.0");
+    a.setApplicationVersion(act::CurrnetVersion);
     a.setOrganizationName("poor mpei students");
     a.setOrganizationDomain("mpei.space");
     a.setQuitOnLastWindowClosed(false);
     MainWindow w;
 
-    QObject::connect(&w, &MainWindow::ForceClose, &a, &QApplication::quit);
-    QObject::connect(&w, &MainWindow::FoundedNewVersion, [&]()
+    QObject::connect(&w, &MainWindow::quitapp, &a, &QApplication::quit);
+    QObject::connect(&w, &MainWindow::newversion, [&]()
     {
-        QProcess P(&w);
+        QProcess P;
         QString Path = QString(QDir().currentPath() + "/maintenancetool.exe");
-        P.start(Path);
-        P.waitForFinished(-1);
+        P.execute(Path);
     });
     return a.exec();
 }

@@ -35,28 +35,34 @@ RCC_DIR = ../../common/build/rcc
 UI_DIR =  ../../common/build/ui
 
 CONFIG(debug, debug|release) {
-    QMAKE_POST_LINK += D:\Frameworks\Qt\6.0.3\mingw81_64\bin\windeployqt $$OUT_PWD/../../ActualochkaDebug
+    QMAKE_POST_LINK += windeployqt $$OUT_PWD/../../ActualochkaDebug
 } else {
-    QMAKE_POST_LINK += D:\Frameworks\Qt\6.0.3\mingw81_64\bin\windeployqt $$OUT_PWD/../../ActualochkaRelease
+    QMAKE_POST_LINK += windeployqt $$OUT_PWD/../../ActualochkaRelease
 }
 
-win32:OBJECTS_DIR = ../common/build/o/win32
-macx:OBJECTS_DIR = ../common/build/o/macx
-unix:OBJECTS_DIR = ../common/build/o/unix
+win32:OBJECTS_DIR = ../../common/build/o/win32
+macx:OBJECTS_DIR = ../../common/build/o/macx
+unix:OBJECTS_DIR = ../../common/build/o/unix
 
 SOURCES += \
-    src/confighandler.cpp \
+    src/calendardatehandler.cpp \
     src/main.cpp \
     src/mainwindow.cpp \
-    src/networreplyer.cpp \
-    src/serverjsonparser.cpp
+    src/serverjsonparser.cpp \
+    src/usystemtray.cpp \
+    src/utimerhandler.cpp \
+    src/uwebhandler.cpp \
+    src/configerexplorer.cpp
 
 HEADERS += \
+    include/General/configerexplorer.hpp \
     include/General/general.hpp \
     include/Mainwindow/mainwindow.hpp \
-    include/General/confighandler.hpp \
-    include/Receiver/serverjsonparser.hpp \
-    include/Receiver/networreplyer.hpp
+    include/System/calendardatehandler.hpp \
+    include/System/serverjsonparser.hpp \
+    include/System/usystemtray.hpp \
+    include/System/utimerhandler.hpp \
+    include/System/uwebhandler.hpp
 
 FORMS += \
     ui/mainwindow.ui
