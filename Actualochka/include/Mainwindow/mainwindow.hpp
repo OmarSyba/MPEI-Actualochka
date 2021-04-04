@@ -2,17 +2,26 @@
 #define MAINWINDOW_HPP
 
 #include <QMainWindow>
-#include <QSystemTrayIcon>
-#include <QTimer>
 
-#include "../General/general.hpp"
-#include "../General/confighandler.hpp"
-#include "../Receiver/serverjsonparser.hpp"
-#include "../Receiver/networreplyer.hpp"
+#include "include/General/general.hpp"
+#include "include/General/configerexplorer.hpp"
+#include "include/System/usystemtray.hpp"
+#include "include/System/utimerhandler.hpp"
+#include "include/System/uwebhandler.hpp"
+#include "include/System/serverjsonparser.hpp"
+#include "include/System/calendardatehandler.hpp"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
+
+struct Content
+{
+    QString Actuallity;
+    QVector<QString> ScheduleWeek;
+    QVector<CellData> ScheduleMonth;
+    QMap<QString, quint32> Groups;
+};
 
 class MainWindow : public QMainWindow
 {
@@ -22,61 +31,41 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
-    void InitParams();
-    void SetToolTipTime();
-    void keyPressEvent(QKeyEvent *event) override;
-    void GetListGroups();
+    virtual void keyPressEvent(QKeyEvent *event) final;
 
-private slots:
-    void onResultActually(QNetworkReply *reply);
+    void InitWindowParameters();
+
+public slots:
     void onResultSchedule(QNetworkReply *reply);
+    void onResultActually(QNetworkReply *reply);
     void onResultScheduleMonth(QNetworkReply *reply);
-    void onResultWithOutTray(QNetworkReply *reply);
-    void onResultCheckUpdate(QNetworkReply *reply);
     void GetListOfGroups(QNetworkReply *reply);
-
-    void onActivatedSetContent(QSystemTrayIcon::ActivationReason reason);
-    void onActivatedSetSchedule();
-
-    void onActivatedSetCalendar();
-    void MessageClicked();
-
-    void on_checkBox_stateChanged(int arg1);
-    void on_spinBox_valueChanged(int arg1);
-    void on_pushButton_clicked();
-    void on_checkupdateButton_clicked();
-    void on_radioButton_toggled(bool checked);
-    void on_comboBoxGroup_activated(int index);
+    void onResultCheckForUpdate(QNetworkReply *reply);
+    void onAutoRunChanged(int state);
+    void onNotifyChanged(bool state);
+    void onComboBoxActivated(int index);
+    void onSpinBoxValueChanged(int value);
+    void onSysTrayActivated(QSystemTrayIcon::ActivationReason reason);
 
 private:
-    inline void SetUpTimer();
-    inline void SetUpSystemTrayIcon();
-    inline void SetUpConfig();
+    void InitPrivateParameters();
+    void SetUpSettingsTab();
+    void SetUpConnects();
+    void MakeReceive();
 
 signals:
-    void ForceClose();
-    void FoundedNewVersion();
+    void quitapp();
+    void newversion();
 
 private:
-    QString actuallyContent;
-    QString groupUrl;
+    Content content;
 
-    QMap<QString, quint32> groups;
+    CalendarDateHandler *calendar   = nullptr;
+    ConfigerExplorer    *config     = nullptr;
+    USystemTray         *sysTray    = nullptr;
+    UTimerHandler       *timer      = nullptr;
+    UWebHandler         *web        = nullptr;
+    Ui::MainWindow      *ui         = nullptr;
 
-    QVector<QString> scheduleContent;
-    QVector<CellData> scheduleCalendar;
-
-    QTime time;
-
-    Ui::MainWindow *ui;
-    QMenu *context = nullptr;
-    QVector<QAction *> actions;
-
-    SConfig *config = nullptr;
-    QSystemTrayIcon *tIcon = nullptr;
-
-    QTimer *timer = nullptr;
-    QTimer *toolTipPpdater = nullptr;
-    QJsonObject *configJson = nullptr;
 };
 #endif // MAINWINDOW_HPP
