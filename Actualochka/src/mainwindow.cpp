@@ -1,6 +1,7 @@
 #include "../include/Mainwindow/mainwindow.hpp"
 #include "ui_mainwindow.h"
 
+#include <QDesktopServices>
 #include <QKeyEvent>
 #include <QCheckBox>
 #include <QTimer>
@@ -219,6 +220,12 @@ void MainWindow::SetUpConnects()
     {
         ui->tabWidget->setCurrentIndex(1);
         show();
+    });
+
+    connect(sysTray->GetDevConnectAction(), &QAction::triggered, this, [&]()
+    {
+        QDesktopServices::openUrl(tr("https://vk.com/koalian"));
+        QDesktopServices::openUrl(tr("https://vk.com/id45052566"));
     });
 
     connect(sysTray->GetCalendarAction(), &QAction::triggered, this, [&]()

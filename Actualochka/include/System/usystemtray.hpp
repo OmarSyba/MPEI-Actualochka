@@ -16,6 +16,7 @@ public:
     QAction *GetSettingsAction()    const;
     QAction *GetCalendarAction()    const;
     QAction *GetExitAction()        const;
+    QAction *GetDevConnectAction()  const;
 
 public:
     void setContextMenuTimer(qint64 time);
