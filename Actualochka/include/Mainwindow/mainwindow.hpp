@@ -42,7 +42,7 @@ public slots:
     void GetListOfGroups(QNetworkReply *reply);
     void onResultCheckForUpdate(QNetworkReply *reply);
     void onAutoRunChanged(int state);
-    void onNotifyChanged(bool state);
+    void onNotifyChanged(int state);
     void onComboBoxActivated(int index);
     void onSpinBoxValueChanged(int value);
     void onSysTrayActivated(QSystemTrayIcon::ActivationReason reason);

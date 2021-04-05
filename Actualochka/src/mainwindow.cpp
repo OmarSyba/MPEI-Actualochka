@@ -11,6 +11,7 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
+    qInfo(logInfo()) << " [" << __FUNCTION__ << "] --- " << "Start Maimwindow construct";
     ui->setupUi(this);
     InitWindowParameters();
     InitPrivateParameters();
@@ -29,6 +30,7 @@ MainWindow::~MainWindow()
 
 void MainWindow::InitWindowParameters()
 {
+    qInfo(logInfo()) << " [" << __FUNCTION__ << "] --- " << "Set up window parameters";
     setWindowTitle(tr("Актуалочка"));
     setFixedSize(QSize(640, 480));
 
@@ -41,12 +43,14 @@ void MainWindow::InitWindowParameters()
 
 void MainWindow::keyPressEvent(QKeyEvent *event)
 {
+    qWarning(logWarning()) << " [" << __FUNCTION__ << "] --- " << "Esc was pressed";
     if (event->key() == Qt::Key_Escape)
         close();
 }
 
 void MainWindow::onResultActually(QNetworkReply *reply)
 {
+    qInfo(logInfo()) << " [" << __FUNCTION__ << "] --- " << "Get result actuallity";
     content.Actuallity = reply->error() == QNetworkReply::NoError ?
                 ServerJsonParser::ParseJsonFromServer(reply, EReply_Type::Actualochka).at(0) :
                 reply->errorString();
@@ -61,6 +65,7 @@ void MainWindow::onResultActually(QNetworkReply *reply)
 
 void MainWindow::onResultSchedule(QNetworkReply *reply)
 {
+    qInfo(logInfo()) << " [" << __FUNCTION__ << "] --- " << "Get result schedule";
     content.ScheduleWeek = reply->error() == QNetworkReply::NoError ?
                 ServerJsonParser::ParseJsonFromServer(reply, EReply_Type::ScheduleWeek):
                 QVector<QString>(reply->errorString());
@@ -76,6 +81,7 @@ void MainWindow::onResultSchedule(QNetworkReply *reply)
 
 void MainWindow::onResultScheduleMonth(QNetworkReply *reply)
 {
+    qInfo(logInfo()) << " [" << __FUNCTION__ << "] --- " << "Get result schedule month";
     if (reply->error() == QNetworkReply::NoError)
     {
         content.ScheduleMonth = ServerJsonParser::ParseJsonMonth(reply);
@@ -89,6 +95,7 @@ void MainWindow::onAutoRunChanged(int state)
 {
     if (state == Qt::Checked)
     {
+        qInfo(logInfo()) << " [" << __FUNCTION__ << "] --- " << "Auto Run checked";
         config->SetAutoRunEnabled(true);
         config->SaveConfigIntoFile();
 #ifdef Q_OS_WIN32
@@ -99,6 +106,7 @@ void MainWindow::onAutoRunChanged(int state)
     }
     else
     {
+        qInfo(logInfo()) << " [" << __FUNCTION__ << "] --- " << "Auto Run unchecked";
         config->SetAutoRunEnabled(false);
         config->SaveConfigIntoFile();
 #ifdef Q_OS_WIN32
@@ -108,11 +116,13 @@ void MainWindow::onAutoRunChanged(int state)
     }
 }
 
-void MainWindow::onNotifyChanged(bool state)
+void MainWindow::onNotifyChanged(int tstate)
 {
+    bool state = Qt::Checked == tstate;
     config->SetNotifyEnabled(state);
     ui->spinBoxInterval->setReadOnly(!state);
     !state ? timer->StopTimer() : timer->StartTimer();
+    qInfo(logInfo()) << " [" << __FUNCTION__ << "] --- " << "Notify enabled changed";
 }
 
 void MainWindow::onComboBoxActivated(int index)
@@ -134,6 +144,7 @@ void MainWindow::onComboBoxActivated(int index)
 
     connect(namA, SIGNAL(finished(QNetworkReply*)), this, SLOT(onResultSchedule(QNetworkReply*)));
     connect(namS, SIGNAL(finished(QNetworkReply*)), this, SLOT(onResultScheduleMonth(QNetworkReply*)));
+    qInfo(logInfo()) << " [" << __FUNCTION__ << "] --- " << "Combo box activated";
 }
 
 void MainWindow::onSpinBoxValueChanged(int value)
@@ -142,10 +153,12 @@ void MainWindow::onSpinBoxValueChanged(int value)
     timer->StopTimer();
     timer->SetTimer(value * act::oneHour);
     timer->StartTimer();
+    qInfo(logInfo()) << " [" << __FUNCTION__ << "] --- " << "Spin Box changed";
 }
 
 void MainWindow::onSysTrayActivated(QSystemTrayIcon::ActivationReason reason)
 {
+    qInfo(logInfo()) << " [" << __FUNCTION__ << "] --- " << "Sys tray activated. ReasonID = " << reason;
     switch (reason)
     {
         break;
@@ -167,20 +180,21 @@ void MainWindow::InitPrivateParameters()
 
     sysTray = new USystemTray(this);
     timer = new UTimerHandler(config->GetInterval());
-    qDebug() << timer->GetRemainingTimeTimer();
     web = new UWebHandler(this);
     calendar = new CalendarDateHandler(ui->calendarWidget, ui->color1, ui->color2, ui->color3);
 
     SetUpSettingsTab();
     SetUpConnects();
+    qInfo(logInfo()) << " [" << __FUNCTION__ << "] --- " << "Initial basic ptrs";
 }
 
 void MainWindow::SetUpSettingsTab()
 {
     ui->checkBoxAutoRun->setChecked(config->isAutoRunEnabled());
-    ui->radioButtonNotify->setChecked(config->isNotifyEnabled());
+    ui->checkBoxNotify->setChecked(config->isNotifyEnabled());
     ui->spinBoxInterval->setValue(config->GetInterval() / act::oneHour);
     ui->spinBoxInterval->setReadOnly(!config->isNotifyEnabled());
+    qInfo(logInfo()) << " [" << __FUNCTION__ << "] --- " << "Set up settings tab";
 }
 
 void MainWindow::GetListOfGroups(QNetworkReply *reply)
@@ -201,17 +215,19 @@ void MainWindow::GetListOfGroups(QNetworkReply *reply)
         }
     }
     reply->deleteLater();
+    qInfo(logInfo()) << " [" << __FUNCTION__ << "] --- " << "Make request about list of groups";
 }
 
 void MainWindow::onResultCheckForUpdate(QNetworkReply *reply)
 {
      QString version = "v" + ServerJsonParser::ParseVersion(reply);
+     qWarning(logWarning()) << " [" << __FUNCTION__ << "] --- " << "Version on pc : " << act::CurrnetVersion << " -- Version on server : " << version;
      if (version != act::CurrnetVersion)
      {
-         qDebug() << version << act::CurrnetVersion;
          emit newversion();
      }
      reply->deleteLater();
+     qWarning(logWarning()) << " [" << __FUNCTION__ << "] --- " << "Version get pressed";
 }
 
 void MainWindow::SetUpConnects()
@@ -253,10 +269,11 @@ void MainWindow::SetUpConnects()
     connect(timer->GetCurrentTimer(), &QTimer::timeout, this, &MainWindow::MakeReceive);
     connect(ui->UpdateButton, &QPushButton::clicked, this, &MainWindow::MakeReceive);
     connect(ui->checkBoxAutoRun, SIGNAL(stateChanged(int)), this, SLOT(onAutoRunChanged(int)));
-    connect(ui->radioButtonNotify, SIGNAL(toggled(bool)), this, SLOT(onNotifyChanged(bool)));
+    connect(ui->checkBoxNotify, SIGNAL(stateChanged(int)), this, SLOT(onNotifyChanged(int)));
     connect(ui->pushButtonSave, &QPushButton::clicked, this, [&]() { config->SaveConfigIntoFile(); });
     connect(ui->comboBoxGroup, SIGNAL(activated(int)), this, SLOT(onComboBoxActivated(int)));
     connect(ui->spinBoxInterval, SIGNAL(valueChanged(int)), this, SLOT(onSpinBoxValueChanged(int)));
+    qCritical(logCritical()) << " [" << __FUNCTION__ << "] --- " << "Set up connects";
 }
 
 void MainWindow::MakeReceive()
@@ -275,4 +292,5 @@ void MainWindow::MakeReceive()
     connect(namScheduleWeek, SIGNAL(finished(QNetworkReply*)), this, SLOT(onResultSchedule(QNetworkReply*)));
     connect(namMonth, SIGNAL(finished(QNetworkReply*)), this, SLOT(onResultScheduleMonth(QNetworkReply*)));
     connect(namGroups, SIGNAL(finished(QNetworkReply*)), this, SLOT(GetListOfGroups(QNetworkReply*)));
+    qInfo(logInfo()) << " [" << __FUNCTION__ << "] --- " << "Make request on server";
 }
