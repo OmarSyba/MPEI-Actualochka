@@ -18,9 +18,10 @@ void ConfigerExplorer::OpenJsonConfig()
     QFile config(act::ConfigPath);
     if (!config.open(QIODevice::ReadWrite))
     {
-        qDebug() << "Can't open config file";
+        qCritical(logCritical()) << " [" << __FUNCTION__ << "] --- " << "Can't open config";
         return;
     }
+    qInfo(logInfo()) << " [" << __FUNCTION__ << "] --- " << "Config opened";
     QJsonDocument jsonDocument = QJsonDocument::fromJson(config.readAll());
     _jsonObject = new QJsonObject(jsonDocument.object());
 
@@ -33,6 +34,7 @@ void ConfigerExplorer::OpenJsonConfig()
         (*_jsonObject)["notify"] = true;
         (*_jsonObject)["groupId"] = 12861;
         (*_jsonObject)["groupName"] = tr("40a-20");
+        qInfo(logInfo()) << " [" << __FUNCTION__ << "] --- " << "Config was empty";
     }
     config.close();
     HandleConfig();
@@ -42,14 +44,14 @@ void ConfigerExplorer::SaveConfigIntoFile()
 {
     if (!_jsonObject)
     {
-        qDebug() << "Config doesn't exist! Can't save!";
+        qCritical(logCritical()) << " [" << __FUNCTION__ << "] --- " << "Can't save config. Json object doesn't exist";
         return;
     }
 
     QFile config(act::ConfigPath);
     if (!config.open(QIODevice::WriteOnly))
     {
-        qDebug() << "Config can't open to save!";
+        qCritical(logCritical()) << " [" << __FUNCTION__ << "] --- " << "Can't open config to save!";
     }
     else
     {
@@ -69,7 +71,7 @@ void ConfigerExplorer::HandleConfig()
 {
     if (!_jsonObject)
     {
-        qDebug() << "Config doesn't exist";
+        qWarning(logWarning()) << " [" << __FUNCTION__ << "] --- " << "Json object doesn't exist!";
         SetDefaultConfig();
     }
 
@@ -97,6 +99,7 @@ void ConfigerExplorer::SetDefaultConfig()
     _cData.isNotifyEnable   = true;
     _cData.groupId          = 12861;
     _cData.groupName        = tr("40a-20");
+    qInfo(logInfo()) << " [" << __FUNCTION__ << "] --- " << "Set up defaults parameters";
 }
 
 ConfigData &ConfigerExplorer::GetConfigData()

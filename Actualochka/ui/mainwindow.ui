@@ -132,9 +132,9 @@
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout_3">
             <item>
-             <widget class="QRadioButton" name="radioButtonNotify">
+             <widget class="QCheckBox" name="checkBoxNotify">
               <property name="text">
-               <string>Получать уведомления</string>
+               <string>Уведомлять каждые</string>
               </property>
              </widget>
             </item>

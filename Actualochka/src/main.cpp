@@ -1,22 +1,56 @@
 #include "include/Mainwindow/mainwindow.hpp"
-
+#include "include/General/general.hpp"
 #include <QProcess>
+#include <QStyleFactory>
 #include <QApplication>
+
+Q_LOGGING_CATEGORY(logDebug,    "Debug")
+Q_LOGGING_CATEGORY(logInfo,     "Information")
+Q_LOGGING_CATEGORY(logWarning,  "Warning")
+Q_LOGGING_CATEGORY(logCritical, "Critical")
+Q_LOGGING_CATEGORY(logFatal,    "Fatal")
+
+void setUpAppclication(QApplication& app)
+{
+    app.setApplicationName("Actualochka");
+    app.setApplicationVersion(act::CurrnetVersion);
+    app.setOrganizationName("poor mpei students");
+    app.setOrganizationDomain("mpei.space");
+    app.setQuitOnLastWindowClosed(false);
+    app.setStyle(QStyleFactory::create("Fusion"));
+}
+
+void messageHandler(QtMsgType type, const QMessageLogContext& context, const QString& msg)
+{
+    QTextStream out(gFile.data());
+    out << QDateTime::currentDateTime().toString("[dd.MM.yyyy hh:mm:ss] ");
+
+    switch (type)
+    {
+    case QtInfoMsg:     out << "INF";
+        break;
+    case QtDebugMsg:    out << "DBG";
+        break;
+    case QtWarningMsg:  out << "WRN";
+        break;
+    case QtCriticalMsg: out << "CRT";
+        break;
+    case QtFatalMsg:    out << "FTL";
+        break;
+    }
+
+    out << " " <<context.category << ": " << msg << "\n";
+    out.flush();
+}
 
 int main(int argc, char *argv[])
 {
-    if (!QDir(logdir).exists())
-    {
-        QDir actDir("C:/ProgramData");
-        actDir.mkdir("Actualochka");
-    }
-
     QApplication a(argc, argv);
-    a.setApplicationName("Actualochka");
-    a.setApplicationVersion(act::CurrnetVersion);
-    a.setOrganizationName("poor mpei students");
-    a.setOrganizationDomain("mpei.space");
-    a.setQuitOnLastWindowClosed(false);
+    setUpAppclication(a);
+    gFile.reset(new QFile("C:/ProgramData/Actualochka/log.txt"));
+    gFile.data()->open(QFile::Append | QFile::Text);
+    qInstallMessageHandler(messageHandler);
+
     MainWindow w;
 
     QObject::connect(&w, &MainWindow::quitapp, &a, &QApplication::quit);

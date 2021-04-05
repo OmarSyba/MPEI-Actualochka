@@ -3,26 +3,28 @@
 
 #include <QString>
 #include <QDir>
+#include <QLoggingCategory>
 
-//Template url
-//https://mpei-server.herokuapp.com/api/getSchedule?start=2021.03.22&finish=2021.04.22
-//https://mpei-server.herokuapp.com/api/getStudentsGroups
+Q_DECLARE_LOGGING_CATEGORY(logDebug)
+Q_DECLARE_LOGGING_CATEGORY(logInfo)
+Q_DECLARE_LOGGING_CATEGORY(logWarning)
+Q_DECLARE_LOGGING_CATEGORY(logCritical)
+Q_DECLARE_LOGGING_CATEGORY(logFatal)
 
-static QString logdir = QString("C:/ProgramData/Actualochka");
-static QFile logfile(logdir + "/Act.log");
+static QScopedPointer<QFile> gFile;
 
 namespace act
 {
     [[maybe_unused]] static constexpr quint64 oneHour = 1000 * 60 * 60;
-    [[maybe_unused]]static quint64 Interval = 2880000;
+    [[maybe_unused]] static quint64 Interval = 2880000;
 
-    static QString CurrnetVersion = "v1.1.1b";
+    static QString CurrnetVersion = "v1.2.0";
     static QString MpeiActuallity = "https://mpei-server.herokuapp.com/api/getActuality";
     static QString MpeiSchedule = "https://mpei-server.herokuapp.com/api/getSchedule";
     static QString MpeiVersion = "https://mpei-win.herokuapp.com/version";
-    static QString ConfigPath = logdir + "/config.json";
+    static QString ConfigPath = QString("C:/ProgramData/Actualochka") + QString("/config.json");
     static QString AppName = "Actualochka";
     static QString MpeiGroupList = "https://mpei-server.herokuapp.com/api/getStudentsGroups";
-}
+};
 
 #endif // GENERAL_HPP
