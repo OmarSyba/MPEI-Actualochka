@@ -73,6 +73,7 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 RESOURCES += \
+    resources/qdarkstyle/style.qrc \
     resources/res.qrc
 
 win32:VERSION = 1.2.0.0
@@ -82,3 +83,6 @@ WINRT_MANIFEST.publisher = mpei.space
 
 RC_ICONS = resources/favicon.ico
 #TARGET = "Actualochka Пetter"
+
+DISTFILES += \
+    resources/qdarkstyle/style.qss

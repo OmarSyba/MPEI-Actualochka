@@ -39,8 +39,24 @@ void messageHandler(QtMsgType type, const QMessageLogContext& context, const QSt
         break;
     }
 
-    out << " " <<context.category << ": " << msg << "\n";
+    out << " " << context.category << " : " << msg << "\n";
     out.flush();
+}
+
+void setUpStyleApp(QApplication& app)
+{
+    QFile file(":qdarkstyle/style.qss");
+    if (!file.exists())
+    {
+        qCritical(logCritical()) << " [" << __FUNCTION__ << "] --- " << "Can't get style resources";
+        return;
+    }
+    file.open(QFile::ReadOnly | QFile::Text);
+
+    QTextStream stream(&file);
+    app.setStyleSheet(stream.readAll());
+
+    qInfo(logInfo()) << " [" << __FUNCTION__ << "] --- " << "Style opened";
 }
 
 int main(int argc, char *argv[])
@@ -51,6 +67,10 @@ int main(int argc, char *argv[])
     gFile.data()->open(QFile::Append | QFile::Text);
     qInstallMessageHandler(messageHandler);
 
+    /* **************************************************************
+     *          Изменить белый на бледный + календарь не изменяется
+     * ************************************************************* */
+    //setUpStyleApp(a);
     MainWindow w;
 
     QObject::connect(&w, &MainWindow::quitapp, &a, &QApplication::quit);
