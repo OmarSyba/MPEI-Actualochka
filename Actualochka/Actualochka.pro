@@ -75,6 +75,10 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 RESOURCES += \
     resources/res.qrc
 
+win32:VERSION = 1.2.0.0
+else:VERSION = 1.2.0
+
+WINRT_MANIFEST.publisher = mpei.space
 
 RC_ICONS = resources/favicon.ico
 #TARGET = "Actualochka Пetter"
