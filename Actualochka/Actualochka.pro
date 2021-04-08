@@ -49,6 +49,7 @@ SOURCES += \
     src/main.cpp \
     src/mainwindow.cpp \
     src/serverjsonparser.cpp \
+    src/switchbutton.cpp \
     src/usystemtray.cpp \
     src/utimerhandler.cpp \
     src/uwebhandler.cpp \
@@ -62,7 +63,8 @@ HEADERS += \
     include/System/serverjsonparser.hpp \
     include/System/usystemtray.hpp \
     include/System/utimerhandler.hpp \
-    include/System/uwebhandler.hpp
+    include/System/uwebhandler.hpp \
+    include/UI/switchbutton.hpp
 
 FORMS += \
     ui/mainwindow.ui
