@@ -3,4 +3,10 @@
         <file>main.ico</file>
         <file>favicon.ico</file>
     </qresource>
+    <qresource prefix="/menu">
+        <file>exit.png</file>
+        <file>settings.png</file>
+        <file>calendar.png</file>
+        <file>dev.png</file>
+    </qresource>
 </RCC>

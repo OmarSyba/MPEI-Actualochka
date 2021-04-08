@@ -10,6 +10,7 @@
 #include "include/System/uwebhandler.hpp"
 #include "include/System/serverjsonparser.hpp"
 #include "include/System/calendardatehandler.hpp"
+#include "include/UI/switchbutton.hpp"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -60,6 +61,7 @@ signals:
 private:
     Content content;
 
+    SwitchButton        *swButton   = nullptr;
     CalendarDateHandler *calendar   = nullptr;
     ConfigerExplorer    *config     = nullptr;
     USystemTray         *sysTray    = nullptr;

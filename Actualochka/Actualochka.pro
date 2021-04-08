@@ -49,6 +49,7 @@ SOURCES += \
     src/main.cpp \
     src/mainwindow.cpp \
     src/serverjsonparser.cpp \
+    src/switchbutton.cpp \
     src/usystemtray.cpp \
     src/utimerhandler.cpp \
     src/uwebhandler.cpp \
@@ -62,7 +63,8 @@ HEADERS += \
     include/System/serverjsonparser.hpp \
     include/System/usystemtray.hpp \
     include/System/utimerhandler.hpp \
-    include/System/uwebhandler.hpp
+    include/System/uwebhandler.hpp \
+    include/UI/switchbutton.hpp
 
 FORMS += \
     ui/mainwindow.ui
@@ -73,6 +75,7 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 RESOURCES += \
+    resources/qdarkstyle/style.qrc \
     resources/res.qrc
 
 win32:VERSION = 1.2.0.0
@@ -82,3 +85,6 @@ WINRT_MANIFEST.publisher = mpei.space
 
 RC_ICONS = resources/favicon.ico
 #TARGET = "Actualochka Пetter"
+
+DISTFILES += \
+    resources/qdarkstyle/style.qss

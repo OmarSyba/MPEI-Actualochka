@@ -39,6 +39,10 @@ void MainWindow::InitWindowParameters()
     ui->tabWidget->setTabText(2, tr("Календарь"));
     ui->tabWidget->setCurrentIndex(0);
     ui->labelVersion->setText(act::CurrnetVersion);
+
+    swButton = new SwitchButton(this);
+    auto layout = ui->tab_4->layout();
+    layout->addWidget(swButton);
 }
 
 void MainWindow::keyPressEvent(QKeyEvent *event)

@@ -18,6 +18,11 @@ USystemTray::USystemTray(QObject *parent) : QSystemTrayIcon(parent)
     systemTrayMenu->addSeparator();
     systemTrayMenu->addAction(exit);
 
+    exit->setIcon(QIcon(":menu/exit.png"));
+    settingsTab->setIcon(QIcon(":menu/settings.png"));
+    calendarTab->setIcon(QIcon(":menu/calendar.png"));
+    devConnect->setIcon(QIcon(":menu/dev.png"));
+
     setContextMenu(systemTrayMenu);
     actions.append(calendarTab);
     actions.append(settingsTab);
