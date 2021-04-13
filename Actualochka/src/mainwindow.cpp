@@ -280,6 +280,8 @@ void MainWindow::SetUpConnects()
 
 void MainWindow::MakeReceive()
 {
+    content.Groups.clear();
+    ui->comboBoxGroup->clear();
     QString groupUrl = act::MpeiSchedule + "?group=" + QString::number(config->GetGroupId());
     QString ScheduleMonthUrl = act::MpeiSchedule + "?group=" + QString::number(config->GetGroupId()) + "&start=" +
                     QDate().currentDate().toString("yyyy.MM.dd") +
