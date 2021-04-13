@@ -39,17 +39,15 @@ void MainWindow::InitWindowParameters()
     ui->tabWidget->setTabText(2, tr("Календарь"));
     ui->tabWidget->setCurrentIndex(0);
     ui->labelVersion->setText(act::CurrnetVersion);
-
-    swButton = new SwitchButton(this);
-    auto layout = ui->tab_4->layout();
-    layout->addWidget(swButton);
 }
 
 void MainWindow::keyPressEvent(QKeyEvent *event)
 {
     qWarning(logWarning()) << " [" << __FUNCTION__ << "] --- " << "Esc was pressed";
     if (event->key() == Qt::Key_Escape)
+    {
         close();
+    }
 }
 
 void MainWindow::onResultActually(QNetworkReply *reply)

@@ -78,8 +78,8 @@ RESOURCES += \
     resources/qdarkstyle/style.qrc \
     resources/res.qrc
 
-win32:VERSION = 1.2.0.0
-else:VERSION = 1.2.0
+win32:VERSION = 1.2.2.0
+else:VERSION = 1.2.2
 
 WINRT_MANIFEST.publisher = mpei.space
 

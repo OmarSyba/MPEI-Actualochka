@@ -18,7 +18,7 @@ namespace act
     [[maybe_unused]] static constexpr quint64 oneHour = 1000 * 60 * 60;
     [[maybe_unused]] static quint64 Interval = 2880000;
 
-    static QString CurrnetVersion = "v1.2.0";
+    static QString CurrnetVersion = "v1.2.2";
     static QString MpeiActuallity = "https://mpei-server.herokuapp.com/api/getActuality";
     static QString MpeiSchedule = "https://mpei-server.herokuapp.com/api/getSchedule";
     static QString MpeiVersion = "https://mpei-win.herokuapp.com/version";
