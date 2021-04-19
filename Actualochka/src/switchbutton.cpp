@@ -68,7 +68,6 @@ void SwitchButton::paintEvent(QPaintEvent *)
        p.setBrush(_thumb);
        p.setOpacity(1.0);
        p.drawEllipse(QRectF(offset() - (_height / 2), _y - (_height / 2), height(), height()));
-       qDebug() << offset() - (_height / 2) << _y - (_height / 2);
     }
     else
     {

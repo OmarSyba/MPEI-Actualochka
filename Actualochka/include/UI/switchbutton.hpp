@@ -4,7 +4,7 @@
 #include <QAbstractButton>
 #include <QtWidgets>
 
-class SwitchButton : public QAbstractButton//, public QWidget
+class SwitchButton : public QAbstractButton
 {
     Q_OBJECT
     Q_PROPERTY(int offset READ offset WRITE setOffset)

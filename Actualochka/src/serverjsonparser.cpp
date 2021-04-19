@@ -76,7 +76,8 @@ QVector<QString> ServerJsonParser::ParseJson(QJsonArray &tjsonArray)
 
     for (auto&& x : tjsonArray)
     {
-        QJsonObject obj = x.toObject();
+        QJsonObject obj = x.toObject(); 
+
         QString dayOfWeekString     = obj["dayOfWeekString"].toString();
         QString discipline          = obj["discipline"].toString();
         QString date                = obj["date"].toString();
@@ -84,6 +85,12 @@ QVector<QString> ServerJsonParser::ParseJson(QJsonArray &tjsonArray)
         QString beginLesson         = obj["beginLesson"].toString();
         QString endLesson           = obj["endLesson"].toString();
         QString lecturer            = obj["lecturer"].toString();
+
+        /*                                        *
+         *      Change yyyy.MM.dd to dd.MM.yyyy
+         *                                        */
+        QStringList dateList = date.split(".");
+        date = QDate(dateList[0].toInt(), dateList[1].toInt(), dateList[2].toInt()).toString("dd.MM.yyyy");
 
         QString resultString = "[" + dayOfWeekString + "] "         +
                 discipline + " - " + date + "\n"                    +

@@ -78,7 +78,7 @@ int main(int argc, char *argv[])
     {
         QProcess P;
         QString Path = QString(QDir().currentPath() + "/maintenancetool.exe");
-        P.execute(Path);
+        P.start(Path);
     });
     return a.exec();
 }
