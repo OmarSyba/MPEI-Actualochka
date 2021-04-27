@@ -38,6 +38,7 @@ void MainWindow::InitWindowParameters()
     ui->tabWidget->setTabText(1, tr("Настройки"));
     ui->tabWidget->setTabText(2, tr("Календарь"));
     ui->tabWidget->setCurrentIndex(0);
+    ui->textEditShedule->setReadOnly(true);
     ui->labelVersion->setText(act::CurrnetVersion);
 }
 
