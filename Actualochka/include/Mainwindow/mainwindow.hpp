@@ -53,6 +53,7 @@ private:
     void SetUpSettingsTab();
     void SetUpConnects();
     void MakeReceive();
+    void ConnectOnlineSlots();
 
 signals:
     void quitapp();

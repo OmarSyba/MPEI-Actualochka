@@ -46,6 +46,8 @@ public:
     void SetGroupId(quint32 tId);
     void SetGroupName(QString& tName);
 
+    QJsonObject GetLatestSchedule();
+
 private:
     void HandleConfig();
     void SetDefaultConfig();

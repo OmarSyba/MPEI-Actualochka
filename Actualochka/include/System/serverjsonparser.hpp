@@ -29,6 +29,7 @@ class ServerJsonParser : public QObject
 public:
     ServerJsonParser() = delete;
 
+    static bool isOnline();
     static QMap<QString, quint32> ParseGroups(QNetworkReply *reply);
     static QVector<QString> ParseJsonFromServer(QNetworkReply *reply, EReply_Type type);
     static QVector<CellData> ParseJsonMonth(QNetworkReply *reply);

@@ -171,3 +171,14 @@ void ConfigerExplorer::SetGroupName(QString &tName)
 {
     _cData.groupName = tName;
 }
+
+QJsonObject ConfigerExplorer::GetLatestSchedule()
+{
+    QFile config(act::ConfigPath);
+    if (!config.open(QIODevice::WriteOnly))
+    {
+        qCritical(logCritical()) << " [" << __FUNCTION__ << "] --- " << "Can't open config to get schedule";
+    }
+
+    (*_jsonObject)
+}

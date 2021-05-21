@@ -269,13 +269,19 @@ void MainWindow::SetUpConnects()
         connect(namVersion, SIGNAL(finished(QNetworkReply*)), this, SLOT(onResultCheckForUpdate(QNetworkReply*)));
     });
     connect(sysTray, &QSystemTrayIcon::activated, this, &MainWindow::onSysTrayActivated);
-    connect(timer->GetCurrentTimer(), &QTimer::timeout, this, &MainWindow::MakeReceive);
-    connect(ui->UpdateButton, &QPushButton::clicked, this, &MainWindow::MakeReceive);
     connect(ui->checkBoxAutoRun, SIGNAL(stateChanged(int)), this, SLOT(onAutoRunChanged(int)));
     connect(ui->checkBoxNotify, SIGNAL(stateChanged(int)), this, SLOT(onNotifyChanged(int)));
     connect(ui->pushButtonSave, &QPushButton::clicked, this, [&]() { config->SaveConfigIntoFile(); });
     connect(ui->comboBoxGroup, SIGNAL(activated(int)), this, SLOT(onComboBoxActivated(int)));
     connect(ui->spinBoxInterval, SIGNAL(valueChanged(int)), this, SLOT(onSpinBoxValueChanged(int)));
+    if (ServerJsonParser::isOnline())
+    {
+        ConnectOnlineSlots();
+    }
+    else
+    {
+
+    }
     qCritical(logCritical()) << " [" << __FUNCTION__ << "] --- " << "Set up connects";
 }
 
@@ -298,4 +304,10 @@ void MainWindow::MakeReceive()
     connect(namMonth, SIGNAL(finished(QNetworkReply*)), this, SLOT(onResultScheduleMonth(QNetworkReply*)));
     connect(namGroups, SIGNAL(finished(QNetworkReply*)), this, SLOT(GetListOfGroups(QNetworkReply*)));
     qInfo(logInfo()) << " [" << __FUNCTION__ << "] --- " << "Make request on server";
+}
+
+void MainWindow::ConnectOnlineSlots()
+{
+    connect(timer->GetCurrentTimer(), &QTimer::timeout, this, &MainWindow::MakeReceive);
+    connect(ui->UpdateButton, &QPushButton::clicked, this, &MainWindow::MakeReceive);
 }
