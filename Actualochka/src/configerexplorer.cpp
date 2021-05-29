@@ -179,6 +179,4 @@ QJsonObject ConfigerExplorer::GetLatestSchedule()
     {
         qCritical(logCritical()) << " [" << __FUNCTION__ << "] --- " << "Can't open config to get schedule";
     }
-
-    (*_jsonObject)
 }
