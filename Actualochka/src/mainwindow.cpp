@@ -274,6 +274,7 @@ void MainWindow::SetUpConnects()
     connect(ui->pushButtonSave, &QPushButton::clicked, this, [&]() { config->SaveConfigIntoFile(); });
     connect(ui->comboBoxGroup, SIGNAL(activated(int)), this, SLOT(onComboBoxActivated(int)));
     connect(ui->spinBoxInterval, SIGNAL(valueChanged(int)), this, SLOT(onSpinBoxValueChanged(int)));
+
     if (ServerJsonParser::isOnline())
     {
         ConnectOnlineSlots();
