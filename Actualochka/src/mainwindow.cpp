@@ -182,6 +182,11 @@ void MainWindow::onSysTrayActivated(QSystemTrayIcon::ActivationReason reason)
     }
 }
 
+void MainWindow::onResTest(QNetworkReply *reply)
+{
+    qInfo(logInfo()) << " [" << __FUNCTION__ << "] --- " << reply->readAll();
+}
+
 void MainWindow::InitPrivateParameters()
 {
     config = new ConfigerExplorer(this);
@@ -246,6 +251,7 @@ void MainWindow::SetUpConnects()
         ui->tabWidget->setCurrentIndex(1);
         show();
     });
+    qWarning(logWarning()) << " [" << __FUNCTION__ << "] --- " << "Sys tray connect settings";
 
     connect(sysTray->GetDevConnectAction(), &QAction::triggered, this, [&]()
     {
@@ -259,21 +265,30 @@ void MainWindow::SetUpConnects()
         show();
     });
 
+    qWarning(logWarning()) << " [" << __FUNCTION__ << "] --- " << "Sys tray calendar";
+
     connect(sysTray->GetExitAction(), &QAction::triggered, this, [&]()
     {
         emit quitapp();
     });
+    qWarning(logWarning()) << " [" << __FUNCTION__ << "] --- " << "Close connect";
 
     connect(sysTray, &USystemTray::messageClicked, this, [&]()
     {
         ui->tabWidget->setCurrentIndex(0);
         show();
     });
+
+    qWarning(logWarning()) << " [" << __FUNCTION__ << "] --- " << "Message clicked connect";
+
     connect(ui->checkupdateButton, &QPushButton::clicked, this, [&]()
     {
         auto namVersion = web->AccsessUrl(act::MpeiVersion);
         connect(namVersion, SIGNAL(finished(QNetworkReply*)), this, SLOT(onResultCheckForUpdate(QNetworkReply*)));
     });
+
+    qWarning(logWarning()) << " [" << __FUNCTION__ << "] --- " << "Version update connect";
+
     connect(sysTray, &QSystemTrayIcon::activated, this, &MainWindow::onSysTrayActivated);
     connect(ui->checkBoxAutoRun, SIGNAL(stateChanged(int)), this, SLOT(onAutoRunChanged(int)));
     connect(ui->checkBoxNotify, SIGNAL(stateChanged(int)), this, SLOT(onNotifyChanged(int)));
@@ -281,19 +296,22 @@ void MainWindow::SetUpConnects()
     connect(ui->comboBoxGroup, SIGNAL(activated(int)), this, SLOT(onComboBoxActivated(int)));
     connect(ui->spinBoxInterval, SIGNAL(valueChanged(int)), this, SLOT(onSpinBoxValueChanged(int)));
 
-    if (ServerJsonParser::isOnline())
-    {
-        ConnectOnlineSlots();
-    }
-    else
-    {
-
-    }
+//    if (ServerJsonParser::isOnline())
+//    {
+//        ConnectOnlineSlots();
+//    }
+//    else
+//    {
+//        qCritical(logCritical()) << " [" << __FUNCTION__ << "] --- " << "Device offline";
+//    }
+    ConnectOnlineSlots();
     qCritical(logCritical()) << " [" << __FUNCTION__ << "] --- " << "Set up connects";
 }
 
 void MainWindow::MakeReceive()
 {
+    qCritical(logCritical()) << " [" << __FUNCTION__ << "] --- " << "Make request";
+
     content.Groups.clear();
     ui->comboBoxGroup->clear();
     QString groupUrl = act::MpeiSchedule + "?group=" + QString::number(config->GetGroupId());
@@ -305,6 +323,9 @@ void MainWindow::MakeReceive()
     auto namScheduleWeek = web->AccsessUrl(groupUrl);
     auto namMonth = web->AccsessUrl(ScheduleMonthUrl);
     auto namGroups = web->AccsessUrl(act::MpeiGroupList);
+
+    auto namActuallityServ = web->AccsessUrl("https://api.mpei.space/getActuality");
+    connect(namActuallityServ, SIGNAL(finished(QNetworkReply*)), this, SLOT(onResTest(QNetworkReply*)));
 
     connect(namActuallity, SIGNAL(finished(QNetworkReply*)), this, SLOT(onResultActually(QNetworkReply*)));
     connect(namScheduleWeek, SIGNAL(finished(QNetworkReply*)), this, SLOT(onResultSchedule(QNetworkReply*)));

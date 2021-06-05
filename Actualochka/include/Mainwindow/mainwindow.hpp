@@ -48,6 +48,8 @@ public slots:
     void onSpinBoxValueChanged(int value);
     void onSysTrayActivated(QSystemTrayIcon::ActivationReason reason);
 
+    void onResTest(QNetworkReply *reply);
+
 private:
     void InitPrivateParameters();
     void SetUpSettingsTab();
