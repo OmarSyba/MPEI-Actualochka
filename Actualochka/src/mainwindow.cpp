@@ -64,6 +64,8 @@ void MainWindow::onResultActually(QNetworkReply *reply)
     }
     ui->textEditActuallity->setText(content.Actuallity);
     reply->deleteLater();
+
+    qInfo(logInfo()) << " [" << __FUNCTION__ << "] --- " << "Actualochka reply finished";
 }
 
 void MainWindow::onResultSchedule(QNetworkReply *reply)
@@ -80,6 +82,8 @@ void MainWindow::onResultSchedule(QNetworkReply *reply)
         ui->textEditShedule->setText(!ExistingText.isEmpty() ? ExistingText + "\n\n" + x : x);
     }
     reply->deleteLater();
+
+    qInfo(logInfo()) << " [" << __FUNCTION__ << "] --- " << "Schedule reply finished";
 }
 
 void MainWindow::onResultScheduleMonth(QNetworkReply *reply)
@@ -92,6 +96,8 @@ void MainWindow::onResultScheduleMonth(QNetworkReply *reply)
         calendar->SetCalendarStyleByLessions();
     }
     reply->deleteLater();
+
+    qInfo(logInfo()) << " [" << __FUNCTION__ << "] --- " << "Schedule month reply finished";
 }
 
 void MainWindow::onAutoRunChanged(int state)
@@ -218,7 +224,7 @@ void MainWindow::GetListOfGroups(QNetworkReply *reply)
         }
     }
     reply->deleteLater();
-    qInfo(logInfo()) << " [" << __FUNCTION__ << "] --- " << "Make request about list of groups";
+    qInfo(logInfo()) << " [" << __FUNCTION__ << "] --- " << "Group list reply finished";
 }
 
 void MainWindow::onResultCheckForUpdate(QNetworkReply *reply)
@@ -304,7 +310,6 @@ void MainWindow::MakeReceive()
     connect(namScheduleWeek, SIGNAL(finished(QNetworkReply*)), this, SLOT(onResultSchedule(QNetworkReply*)));
     connect(namMonth, SIGNAL(finished(QNetworkReply*)), this, SLOT(onResultScheduleMonth(QNetworkReply*)));
     connect(namGroups, SIGNAL(finished(QNetworkReply*)), this, SLOT(GetListOfGroups(QNetworkReply*)));
-    qInfo(logInfo()) << " [" << __FUNCTION__ << "] --- " << "Make request on server";
 }
 
 void MainWindow::ConnectOnlineSlots()
