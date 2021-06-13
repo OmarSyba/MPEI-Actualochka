@@ -71,7 +71,7 @@ int main(int argc, char *argv[])
     /* **************************************************************
      *          Изменить белый на бледный + календарь не изменяется
      * ************************************************************* */
-    //setUpStyleApp(a);
+    setUpStyleApp(a);
 
     MainWindow w;
     QObject::connect(&w, &MainWindow::quitapp, &a, &QApplication::quit);
