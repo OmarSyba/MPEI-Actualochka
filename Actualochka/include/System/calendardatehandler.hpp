@@ -17,8 +17,11 @@ public:
 
     void SetCalendarStyleByLessions();
     void SetScheduleMonth(QVector<CellData>& scheduleMonth);
+    void SetDarkTheme(bool isDarkTheme);
 
 private:
+
+    bool isDarkTheme;
     QVector<CellData> scheduleMonth;
     QCalendarWidget *calendar;
     QLabel *lection;

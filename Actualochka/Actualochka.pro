@@ -75,11 +75,12 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 RESOURCES += \
-    resources/qdarkstyle/style.qrc \
+    resources/qdarkstyle/darkstyle.qrc \
+    resources/qlightstyle/style.qrc \
     resources/res.qrc
 
-win32:VERSION = 1.2.5.1
-else:VERSION = 1.2.5
+win32:VERSION = 1.2.6.1
+else:VERSION = 1.2.6
 
 WINRT_MANIFEST.publisher = mpei.space
 

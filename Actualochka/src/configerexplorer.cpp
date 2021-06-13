@@ -31,6 +31,7 @@ void ConfigerExplorer::OpenJsonConfig()
         (*_jsonObject)["runs"] = 0;
         (*_jsonObject)["interval"] = QString::number(act::Interval).toStdString().c_str();
         (*_jsonObject)["autorun"] = false;
+        (*_jsonObject)["dark-theme"] = false;
         (*_jsonObject)["notify"] = true;
         (*_jsonObject)["groupId"] = 12861;
         (*_jsonObject)["groupName"] = tr("40a-20");
@@ -55,12 +56,13 @@ void ConfigerExplorer::SaveConfigIntoFile()
     }
     else
     {
-        (*_jsonObject)["runs"]      = QString::number(_cData.appRun).toStdString().c_str();
-        (*_jsonObject)["interval"]  = QString::number(_cData.interval).toStdString().c_str();
-        (*_jsonObject)["autorun"]   = _cData.isAutoRunEnable;
-        (*_jsonObject)["notify"]    = _cData.isNotifyEnable;
-        (*_jsonObject)["groupId"]   =  QString::number(_cData.groupId).toStdString().c_str();
-        (*_jsonObject)["groupName"] = _cData.groupName.toStdString().c_str();
+        (*_jsonObject)["runs"]       = QString::number(_cData.appRun).toStdString().c_str();
+        (*_jsonObject)["interval"]   = QString::number(_cData.interval).toStdString().c_str();
+        (*_jsonObject)["autorun"]    = _cData.isAutoRunEnable;
+        (*_jsonObject)["dark-theme"] = _cData.isDarkTheme;
+        (*_jsonObject)["notify"]     = _cData.isNotifyEnable;
+        (*_jsonObject)["groupId"]    =  QString::number(_cData.groupId).toStdString().c_str();
+        (*_jsonObject)["groupName"]  = _cData.groupName.toStdString().c_str();
 
         config.write(QJsonDocument(*_jsonObject).toJson(QJsonDocument::Indented));
         config.close();
@@ -79,6 +81,7 @@ void ConfigerExplorer::HandleConfig()
     _cData.interval         = QString((*_jsonObject)["interval"].toString()).toUInt();
     _cData.isAutoRunEnable  = (*_jsonObject)["autorun"].toBool();
     _cData.isNotifyEnable   = (*_jsonObject)["notify"].toBool();
+    _cData.isDarkTheme      = (*_jsonObject)["dark-theme"].toBool();
     _cData.groupId          = QString((*_jsonObject)["groupId"].toString()).toUInt();
     _cData.groupName        = (*_jsonObject)["groupName"].toString();
 
@@ -87,6 +90,7 @@ void ConfigerExplorer::HandleConfig()
     {
         _cData.groupId = 12861;
         _cData.groupName = tr("ИЭоз-40а-20");
+        _cData.isDarkTheme = false;
     }
     AppRunsAdd();
 }
@@ -96,6 +100,7 @@ void ConfigerExplorer::SetDefaultConfig()
     _cData.appRun           = 0;
     _cData.interval         = act::Interval;
     _cData.isAutoRunEnable  = false;
+    _cData.isDarkTheme      = false;
     _cData.isNotifyEnable   = true;
     _cData.groupId          = 12861;
     _cData.groupName        = tr("40a-20");
@@ -130,6 +135,11 @@ bool ConfigerExplorer::isAutoRunEnabled() const
 bool ConfigerExplorer::isNotifyEnabled() const
 {
     return _cData.isNotifyEnable;
+}
+
+bool ConfigerExplorer::isDarkTheme() const
+{
+    return _cData.isDarkTheme;
 }
 
 quint32 ConfigerExplorer::GetGroupId() const
@@ -170,6 +180,11 @@ void ConfigerExplorer::SetGroupId(quint32 tId)
 void ConfigerExplorer::SetGroupName(QString &tName)
 {
     _cData.groupName = tName;
+}
+
+void ConfigerExplorer::SetDarkTheme(bool tDarkTheme)
+{
+    _cData.isDarkTheme = tDarkTheme;
 }
 
 QJsonObject ConfigerExplorer::GetLatestSchedule()

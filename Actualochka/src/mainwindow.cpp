@@ -7,6 +7,8 @@
 #include <QTimer>
 #include <QSettings>
 
+#define NORECIEVE
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
@@ -15,7 +17,9 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
     InitWindowParameters();
     InitPrivateParameters();
+#ifndef NORECIEVE
     MakeReceive();
+#endif
 }
 
 MainWindow::~MainWindow()
@@ -134,6 +138,13 @@ void MainWindow::onNotifyChanged(int tstate)
     qInfo(logInfo()) << " [" << __FUNCTION__ << "] --- " << "Notify enabled changed";
 }
 
+void MainWindow::onDarkThemeChanged(int tstate)
+{
+    bool state = Qt::Checked == tstate;
+    config->SetDarkTheme(state);
+    setUpStyleApp(*static_cast<QApplication *>(QApplication::instance()), state);
+}
+
 void MainWindow::onComboBoxActivated(int index)
 {
     QString title = ui->comboBoxGroup->itemText(index);
@@ -182,11 +193,6 @@ void MainWindow::onSysTrayActivated(QSystemTrayIcon::ActivationReason reason)
     }
 }
 
-void MainWindow::onResTest(QNetworkReply *reply)
-{
-    qInfo(logInfo()) << " [" << __FUNCTION__ << "] --- " << reply->readAll();
-}
-
 void MainWindow::InitPrivateParameters()
 {
     config = new ConfigerExplorer(this);
@@ -198,6 +204,7 @@ void MainWindow::InitPrivateParameters()
     calendar = new CalendarDateHandler(ui->calendarWidget, ui->color1, ui->color2, ui->color3);
 
     SetUpSettingsTab();
+    setUpStyleApp(*static_cast<QApplication *>(QApplication::instance()), config->isDarkTheme());
     SetUpConnects();
     qInfo(logInfo()) << " [" << __FUNCTION__ << "] --- " << "Initial basic ptrs";
 }
@@ -208,6 +215,8 @@ void MainWindow::SetUpSettingsTab()
     ui->checkBoxNotify->setChecked(config->isNotifyEnabled());
     ui->spinBoxInterval->setValue(config->GetInterval() / act::oneHour);
     ui->spinBoxInterval->setReadOnly(!config->isNotifyEnabled());
+    ui->checkBoxDarkTheme->setChecked(config->isDarkTheme());
+
     qInfo(logInfo()) << " [" << __FUNCTION__ << "] --- " << "Set up settings tab";
 }
 
@@ -295,6 +304,7 @@ void MainWindow::SetUpConnects()
     connect(ui->pushButtonSave, &QPushButton::clicked, this, [&]() { config->SaveConfigIntoFile(); });
     connect(ui->comboBoxGroup, SIGNAL(activated(int)), this, SLOT(onComboBoxActivated(int)));
     connect(ui->spinBoxInterval, SIGNAL(valueChanged(int)), this, SLOT(onSpinBoxValueChanged(int)));
+    connect(ui->checkBoxDarkTheme, SIGNAL(stateChanged(int)), this, SLOT(onDarkThemeChanged(int)));
 
 //    if (ServerJsonParser::isOnline())
 //    {
@@ -314,7 +324,9 @@ void MainWindow::MakeReceive()
 
     content.Groups.clear();
     ui->comboBoxGroup->clear();
+
     QString groupUrl = act::MpeiSchedule + "?group=" + QString::number(config->GetGroupId());
+
     QString ScheduleMonthUrl = act::MpeiSchedule + "?group=" + QString::number(config->GetGroupId()) + "&start=" +
                     QDate().currentDate().toString("yyyy.MM.dd") +
                     "&finish=" + QDate().currentDate().addMonths(3).toString("yyyy.MM.dd");
@@ -323,9 +335,6 @@ void MainWindow::MakeReceive()
     auto namScheduleWeek = web->AccsessUrl(groupUrl);
     auto namMonth = web->AccsessUrl(ScheduleMonthUrl);
     auto namGroups = web->AccsessUrl(act::MpeiGroupList);
-
-    auto namActuallityServ = web->AccsessUrl("https://api.mpei.space/getActuality");
-    connect(namActuallityServ, SIGNAL(finished(QNetworkReply*)), this, SLOT(onResTest(QNetworkReply*)));
 
     connect(namActuallity, SIGNAL(finished(QNetworkReply*)), this, SLOT(onResultActually(QNetworkReply*)));
     connect(namScheduleWeek, SIGNAL(finished(QNetworkReply*)), this, SLOT(onResultSchedule(QNetworkReply*)));

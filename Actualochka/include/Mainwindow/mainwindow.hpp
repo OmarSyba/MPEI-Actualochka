@@ -44,11 +44,10 @@ public slots:
     void onResultCheckForUpdate(QNetworkReply *reply);
     void onAutoRunChanged(int state);
     void onNotifyChanged(int state);
+    void onDarkThemeChanged(int state);
     void onComboBoxActivated(int index);
     void onSpinBoxValueChanged(int value);
     void onSysTrayActivated(QSystemTrayIcon::ActivationReason reason);
-
-    void onResTest(QNetworkReply *reply);
 
 private:
     void InitPrivateParameters();
