@@ -43,36 +43,43 @@ void messageHandler(QtMsgType type, const QMessageLogContext& context, const QSt
     out.flush();
 }
 
-void setUpStyleApp(QApplication& app)
+void setUpStyleApp(QApplication& app, bool isDark)
 {
-    QFile file(":qdarkstyle/style.qss");
+    QString stylePath = isDark ? ":qdarkstyle/style.qss" : ":qlightstyle/style.qss";
+
+    QFile file(stylePath);
     if (!file.exists())
     {
-        qCritical(logCritical()) << " [" << __FUNCTION__ << "] --- " << "Can't get style resources";
+        qCritical(logCritical()) << " [" << __FUNCTION__ << "] --- " << "Can't get style resources " << stylePath
+                                 << " " << file.errorString();
         return;
     }
     file.open(QFile::ReadOnly | QFile::Text);
 
     QTextStream stream(&file);
     app.setStyleSheet(stream.readAll());
+    file.close();
 
-    qInfo(logInfo()) << " [" << __FUNCTION__ << "] --- " << "Style opened";
+    qInfo(logInfo()) << " [" << __FUNCTION__ << "] --- " << "Style changed" << stylePath;
 }
 
 int main(int argc, char *argv[])
 {
+
     QApplication a(argc, argv);
     setUpAppclication(a);
     gFile.reset(new QFile("C:/ProgramData/Actualochka/log.txt"));
     gFile.data()->open(QFile::Append | QFile::Text);
     qInstallMessageHandler(messageHandler);
 
+    qInfo(logInfo()) << "\n\n\n\t\t*** Start Application at " << QDateTime::currentDateTime() << " ***\n";
+
     /* **************************************************************
      *          Изменить белый на бледный + календарь не изменяется
      * ************************************************************* */
     //setUpStyleApp(a);
-    MainWindow w;
 
+    MainWindow w;
     QObject::connect(&w, &MainWindow::quitapp, &a, &QApplication::quit);
     QObject::connect(&w, &MainWindow::newversion, [&]()
     {
@@ -80,5 +87,6 @@ int main(int argc, char *argv[])
         QString Path = QString(QDir().currentPath() + "/maintenancetool.exe");
         P.start(Path);
     });
+
     return a.exec();
 }

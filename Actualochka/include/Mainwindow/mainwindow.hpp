@@ -44,6 +44,7 @@ public slots:
     void onResultCheckForUpdate(QNetworkReply *reply);
     void onAutoRunChanged(int state);
     void onNotifyChanged(int state);
+    void onDarkThemeChanged(int state);
     void onComboBoxActivated(int index);
     void onSpinBoxValueChanged(int value);
     void onSysTrayActivated(QSystemTrayIcon::ActivationReason reason);
@@ -53,6 +54,7 @@ private:
     void SetUpSettingsTab();
     void SetUpConnects();
     void MakeReceive();
+    void ConnectOnlineSlots();
 
 signals:
     void quitapp();
@@ -60,6 +62,7 @@ signals:
 
 private:
     Content content;
+    ThemeManager manager;
 
     SwitchButton        *swButton   = nullptr;
     CalendarDateHandler *calendar   = nullptr;

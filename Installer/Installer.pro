@@ -35,6 +35,7 @@ CONFIG(debug, debug|release) {
     first.depends = $(first) copydata
     export(first.depends)
     export(copydata.commands)
+
     # задаём кастомную цель сборки, при которой сначала выполним компирование файлов
     # а потом уже и остальное, что следует по скрипту QMake
     QMAKE_EXTRA_TARGETS += first copydata

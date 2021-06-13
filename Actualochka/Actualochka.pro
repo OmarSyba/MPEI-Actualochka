@@ -58,6 +58,7 @@ SOURCES += \
 HEADERS += \
     include/General/configerexplorer.hpp \
     include/General/general.hpp \
+    include/General/themechanger.hpp \
     include/Mainwindow/mainwindow.hpp \
     include/System/calendardatehandler.hpp \
     include/System/serverjsonparser.hpp \
@@ -75,11 +76,12 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 RESOURCES += \
-    resources/qdarkstyle/style.qrc \
+    resources/qdarkstyle/darkstyle.qrc \
+    resources/qlightstyle/style.qrc \
     resources/res.qrc
 
-win32:VERSION = 1.2.3.1
-else:VERSION = 1.2.3
+win32:VERSION = 1.2.7.1
+else:VERSION = 1.2.7
 
 WINRT_MANIFEST.publisher = mpei.space
 

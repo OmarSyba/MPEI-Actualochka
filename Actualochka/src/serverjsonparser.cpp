@@ -1,4 +1,18 @@
 #include "../include/System/serverjsonparser.hpp"
+#include <QEventLoop>
+
+bool ServerJsonParser::isOnline()
+{
+    QNetworkAccessManager nam;
+    QNetworkRequest req(QUrl(QString("https://google.com")));
+    QNetworkReply *reply = nam.get(req);
+
+    QEventLoop loop;
+    connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
+    loop.exec();
+
+    return reply->bytesAvailable();
+}
 
 QMap<QString, quint32> ServerJsonParser::ParseGroups(QNetworkReply *reply)
 {

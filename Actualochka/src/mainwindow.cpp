@@ -7,6 +7,8 @@
 #include <QTimer>
 #include <QSettings>
 
+//#define NORECIEVE
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
@@ -15,7 +17,9 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
     InitWindowParameters();
     InitPrivateParameters();
+#ifndef NORECIEVE
     MakeReceive();
+#endif
 }
 
 MainWindow::~MainWindow()
@@ -38,6 +42,7 @@ void MainWindow::InitWindowParameters()
     ui->tabWidget->setTabText(1, tr("Настройки"));
     ui->tabWidget->setTabText(2, tr("Календарь"));
     ui->tabWidget->setCurrentIndex(0);
+    ui->textEditShedule->setReadOnly(true);
     ui->labelVersion->setText(act::CurrnetVersion);
 }
 
@@ -63,6 +68,8 @@ void MainWindow::onResultActually(QNetworkReply *reply)
     }
     ui->textEditActuallity->setText(content.Actuallity);
     reply->deleteLater();
+
+    qInfo(logInfo()) << " [" << __FUNCTION__ << "] --- " << "Actualochka reply finished";
 }
 
 void MainWindow::onResultSchedule(QNetworkReply *reply)
@@ -79,6 +86,8 @@ void MainWindow::onResultSchedule(QNetworkReply *reply)
         ui->textEditShedule->setText(!ExistingText.isEmpty() ? ExistingText + "\n\n" + x : x);
     }
     reply->deleteLater();
+
+    qInfo(logInfo()) << " [" << __FUNCTION__ << "] --- " << "Schedule reply finished";
 }
 
 void MainWindow::onResultScheduleMonth(QNetworkReply *reply)
@@ -91,6 +100,8 @@ void MainWindow::onResultScheduleMonth(QNetworkReply *reply)
         calendar->SetCalendarStyleByLessions();
     }
     reply->deleteLater();
+
+    qInfo(logInfo()) << " [" << __FUNCTION__ << "] --- " << "Schedule month reply finished";
 }
 
 void MainWindow::onAutoRunChanged(int state)
@@ -125,6 +136,15 @@ void MainWindow::onNotifyChanged(int tstate)
     ui->spinBoxInterval->setReadOnly(!state);
     !state ? timer->StopTimer() : timer->StartTimer();
     qInfo(logInfo()) << " [" << __FUNCTION__ << "] --- " << "Notify enabled changed";
+}
+
+void MainWindow::onDarkThemeChanged(int tstate)
+{
+    bool state = Qt::Checked == tstate;
+    config->SetDarkTheme(state);
+    setUpStyleApp(*static_cast<QApplication *>(QApplication::instance()), state);
+
+    manager.notify(state);
 }
 
 void MainWindow::onComboBoxActivated(int index)
@@ -183,9 +203,13 @@ void MainWindow::InitPrivateParameters()
     sysTray = new USystemTray(this);
     timer = new UTimerHandler(config->GetInterval());
     web = new UWebHandler(this);
-    calendar = new CalendarDateHandler(ui->calendarWidget, ui->color1, ui->color2, ui->color3);
+
+    calendar = new CalendarDateHandler(ui->calendarWidget, ui->color1, ui->color2, ui->color3, config->isDarkTheme());
+    calendar->SetDarkTheme(config->isDarkTheme());
+    manager.subscribe(calendar);
 
     SetUpSettingsTab();
+    setUpStyleApp(*static_cast<QApplication *>(QApplication::instance()), config->isDarkTheme());
     SetUpConnects();
     qInfo(logInfo()) << " [" << __FUNCTION__ << "] --- " << "Initial basic ptrs";
 }
@@ -196,6 +220,8 @@ void MainWindow::SetUpSettingsTab()
     ui->checkBoxNotify->setChecked(config->isNotifyEnabled());
     ui->spinBoxInterval->setValue(config->GetInterval() / act::oneHour);
     ui->spinBoxInterval->setReadOnly(!config->isNotifyEnabled());
+    ui->checkBoxDarkTheme->setChecked(config->isDarkTheme());
+
     qInfo(logInfo()) << " [" << __FUNCTION__ << "] --- " << "Set up settings tab";
 }
 
@@ -217,7 +243,7 @@ void MainWindow::GetListOfGroups(QNetworkReply *reply)
         }
     }
     reply->deleteLater();
-    qInfo(logInfo()) << " [" << __FUNCTION__ << "] --- " << "Make request about list of groups";
+    qInfo(logInfo()) << " [" << __FUNCTION__ << "] --- " << "Group list reply finished";
 }
 
 void MainWindow::onResultCheckForUpdate(QNetworkReply *reply)
@@ -239,6 +265,7 @@ void MainWindow::SetUpConnects()
         ui->tabWidget->setCurrentIndex(1);
         show();
     });
+    qWarning(logWarning()) << " [" << __FUNCTION__ << "] --- " << "Sys tray connect settings";
 
     connect(sysTray->GetDevConnectAction(), &QAction::triggered, this, [&]()
     {
@@ -252,37 +279,59 @@ void MainWindow::SetUpConnects()
         show();
     });
 
+    qWarning(logWarning()) << " [" << __FUNCTION__ << "] --- " << "Sys tray calendar";
+
     connect(sysTray->GetExitAction(), &QAction::triggered, this, [&]()
     {
         emit quitapp();
     });
+    qWarning(logWarning()) << " [" << __FUNCTION__ << "] --- " << "Close connect";
 
     connect(sysTray, &USystemTray::messageClicked, this, [&]()
     {
         ui->tabWidget->setCurrentIndex(0);
         show();
     });
+
+    qWarning(logWarning()) << " [" << __FUNCTION__ << "] --- " << "Message clicked connect";
+
     connect(ui->checkupdateButton, &QPushButton::clicked, this, [&]()
     {
         auto namVersion = web->AccsessUrl(act::MpeiVersion);
         connect(namVersion, SIGNAL(finished(QNetworkReply*)), this, SLOT(onResultCheckForUpdate(QNetworkReply*)));
     });
+
+    qWarning(logWarning()) << " [" << __FUNCTION__ << "] --- " << "Version update connect";
+
     connect(sysTray, &QSystemTrayIcon::activated, this, &MainWindow::onSysTrayActivated);
-    connect(timer->GetCurrentTimer(), &QTimer::timeout, this, &MainWindow::MakeReceive);
-    connect(ui->UpdateButton, &QPushButton::clicked, this, &MainWindow::MakeReceive);
     connect(ui->checkBoxAutoRun, SIGNAL(stateChanged(int)), this, SLOT(onAutoRunChanged(int)));
     connect(ui->checkBoxNotify, SIGNAL(stateChanged(int)), this, SLOT(onNotifyChanged(int)));
     connect(ui->pushButtonSave, &QPushButton::clicked, this, [&]() { config->SaveConfigIntoFile(); });
     connect(ui->comboBoxGroup, SIGNAL(activated(int)), this, SLOT(onComboBoxActivated(int)));
     connect(ui->spinBoxInterval, SIGNAL(valueChanged(int)), this, SLOT(onSpinBoxValueChanged(int)));
+    connect(ui->checkBoxDarkTheme, SIGNAL(stateChanged(int)), this, SLOT(onDarkThemeChanged(int)));
+
+//    if (ServerJsonParser::isOnline())
+//    {
+//        ConnectOnlineSlots();
+//    }
+//    else
+//    {
+//        qCritical(logCritical()) << " [" << __FUNCTION__ << "] --- " << "Device offline";
+//    }
+    ConnectOnlineSlots();
     qCritical(logCritical()) << " [" << __FUNCTION__ << "] --- " << "Set up connects";
 }
 
 void MainWindow::MakeReceive()
 {
+    qCritical(logCritical()) << " [" << __FUNCTION__ << "] --- " << "Make request";
+
     content.Groups.clear();
     ui->comboBoxGroup->clear();
+
     QString groupUrl = act::MpeiSchedule + "?group=" + QString::number(config->GetGroupId());
+
     QString ScheduleMonthUrl = act::MpeiSchedule + "?group=" + QString::number(config->GetGroupId()) + "&start=" +
                     QDate().currentDate().toString("yyyy.MM.dd") +
                     "&finish=" + QDate().currentDate().addMonths(3).toString("yyyy.MM.dd");
@@ -296,5 +345,10 @@ void MainWindow::MakeReceive()
     connect(namScheduleWeek, SIGNAL(finished(QNetworkReply*)), this, SLOT(onResultSchedule(QNetworkReply*)));
     connect(namMonth, SIGNAL(finished(QNetworkReply*)), this, SLOT(onResultScheduleMonth(QNetworkReply*)));
     connect(namGroups, SIGNAL(finished(QNetworkReply*)), this, SLOT(GetListOfGroups(QNetworkReply*)));
-    qInfo(logInfo()) << " [" << __FUNCTION__ << "] --- " << "Make request on server";
+}
+
+void MainWindow::ConnectOnlineSlots()
+{
+    connect(timer->GetCurrentTimer(), &QTimer::timeout, this, &MainWindow::MakeReceive);
+    connect(ui->UpdateButton, &QPushButton::clicked, this, &MainWindow::MakeReceive);
 }
