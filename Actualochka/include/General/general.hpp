@@ -4,6 +4,9 @@
 #include <QString>
 #include <QDir>
 #include <QLoggingCategory>
+#include <QApplication>
+
+#include "include/General/themechanger.hpp"
 
 Q_DECLARE_LOGGING_CATEGORY(logDebug)
 Q_DECLARE_LOGGING_CATEGORY(logInfo)
@@ -12,6 +15,7 @@ Q_DECLARE_LOGGING_CATEGORY(logCritical)
 Q_DECLARE_LOGGING_CATEGORY(logFatal)
 
 static QScopedPointer<QFile> gFile;
+void setUpStyleApp(QApplication& app, bool isDark);
 
 namespace act
 {
