@@ -6,6 +6,8 @@
 #include <QLoggingCategory>
 #include <QApplication>
 
+#include "include/General/themechanger.hpp"
+
 Q_DECLARE_LOGGING_CATEGORY(logDebug)
 Q_DECLARE_LOGGING_CATEGORY(logInfo)
 Q_DECLARE_LOGGING_CATEGORY(logWarning)

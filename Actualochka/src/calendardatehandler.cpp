@@ -2,22 +2,63 @@
 
 #include <QTextCharFormat>
 
-CalendarDateHandler::CalendarDateHandler(QObject *parent) :
-                                QObject(parent)
+CalendarDateHandler::CalendarDateHandler(QCalendarWidget *tcalendar, QLabel *label1, QLabel *label2, QLabel *label3) :
+                                CalendarDateHandler(tcalendar, label1, label2, label3, false)
 {
 }
 
-CalendarDateHandler::CalendarDateHandler(QCalendarWidget *tcalendar, QLabel *label1, QLabel *label2, QLabel *label3) :
-                                calendar(tcalendar), lection(label1), practice(label2), labwork(label3)
+CalendarDateHandler::CalendarDateHandler(QCalendarWidget *tcalendar, QLabel *label1, QLabel *label2, QLabel *label3, bool isDark) :
+                                isDarkTheme(isDark), calendar(tcalendar), lection(label1), practice(label2), labwork(label3)
 {
-    isDarkTheme = false;
     lection->setText(tr("Лекция"));
     practice->setText(tr("Практическое занятие"));
     labwork->setText(tr("Лабораторное занятие"));
 
-    lection->setStyleSheet("QLabel { background-color : #bbbcbf; color : #26262d }");
-    practice->setStyleSheet("QLabel { background-color : #a9e7e8; color : #26262d }");
-    labwork->setStyleSheet("QLabel { background-color : #d6eee1; color : #26262d }");
+    SetDarkTheme(isDarkTheme);
+}
+
+void CalendarDateHandler::SetDarkTheme(bool isDark)
+{
+    isDarkTheme = isDark;
+    if (isDarkTheme)
+    {
+        lection->setStyleSheet("QLabel { background-color : #bbbcbf; color : #26262d }");
+        practice->setStyleSheet("QLabel { background-color : #a9e7e8; color : #26262d }");
+        labwork->setStyleSheet("QLabel { background-color : #d6eee1; color : #26262d }");
+    }
+    else
+    {
+        lection->setStyleSheet("QLabel { background-color : #444C55; color : white }");
+        practice->setStyleSheet("QLabel { background-color : #2D333B; color : white }");
+        labwork->setStyleSheet("QLabel { background-color : #22272E; color : white }");
+    }
+
+    QTextCharFormat form = QTextCharFormat();
+    form.setBackground(QBrush(isDarkTheme ? QColor("#3e3e3e") : Qt::white));
+    form.setForeground(QBrush(isDarkTheme ? Qt::white : QColor("#26262d")));
+    for (auto &x : scheduleMonth)
+    {
+        if (x.lessionType == tr("Лекция"))
+        {
+            form.setBackground(QBrush(QColor(isDarkTheme ? "#bbbcbf" : "#444C55")));
+        }
+        else if (x.lessionType == tr("Практическое занятие"))
+        {
+            form.setBackground(QBrush(QColor(isDarkTheme ? "#a9e7e8" : "#2D333B")));
+        }
+        else
+        {
+            form.setBackground(QBrush(QColor(isDarkTheme ? "#d6eee1" : "#22272E")));
+        }
+        form.setToolTip(x.lession + " - " + x.lessionType);
+        form.setForeground(QBrush(isDarkTheme ? QColor("#26262d") : Qt::white ));
+        calendar->setDateTextFormat(x.date.date(), form);
+    }
+}
+
+void CalendarDateHandler::update(bool isDark)
+{
+    SetDarkTheme(isDark);
 }
 
 void CalendarDateHandler::SetCalendarStyleByLessions()
@@ -38,7 +79,8 @@ void CalendarDateHandler::SetCalendarStyleByLessions()
     QTextCharFormat form = QTextCharFormat();
     for (QDate date = calendar->minimumDate(); date != calendar->maximumDate(); date = date.addDays(1))
     {
-        form.setBackground(QBrush(QColor(255, 255, 255)));
+        form.setBackground(QBrush(isDarkTheme ? QColor("#3e3e3e") : Qt::white));
+        form.setForeground(QBrush(isDarkTheme ? Qt::white : QColor("#26262d")));
         form.setToolTip("");
         calendar->setDateTextFormat(date, form);
     }
@@ -47,18 +89,18 @@ void CalendarDateHandler::SetCalendarStyleByLessions()
     {
         if (x.lessionType == tr("Лекция"))
         {
-            form.setBackground(QBrush(QColor("#bbbcbf")));
+            form.setBackground(QBrush(QColor(isDarkTheme ? "#bbbcbf" : "#444C55")));
         }
         else if (x.lessionType == tr("Практическое занятие"))
         {
-            form.setBackground(QBrush(QColor("#a9e7e8")));
+            form.setBackground(QBrush(QColor(isDarkTheme ? "#a9e7e8" : "#2D333B")));
         }
         else
         {
-            form.setBackground(QBrush(QColor("#d6eee1")));
+            form.setBackground(QBrush(QColor(isDarkTheme ? "#d6eee1" : "#22272E")));
         }
         form.setToolTip(x.lession + " - " + x.lessionType);
-        form.setForeground(QBrush(QColor(255, 255, 255)));
+        form.setForeground(QBrush(isDarkTheme ? QColor("#26262d") : Qt::white ));
         calendar->setDateTextFormat(x.date.date(), form);
     }
 }
@@ -66,9 +108,4 @@ void CalendarDateHandler::SetCalendarStyleByLessions()
 void CalendarDateHandler::SetScheduleMonth(QVector<CellData> &scheduleMonth)
 {
     this->scheduleMonth = scheduleMonth;
-}
-
-void CalendarDateHandler::SetDarkTheme(bool isDarkTheme)
-{
-    this->isDarkTheme = isDarkTheme;
 }

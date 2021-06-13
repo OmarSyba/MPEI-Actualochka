@@ -7,7 +7,7 @@
 #include <QTimer>
 #include <QSettings>
 
-#define NORECIEVE
+//#define NORECIEVE
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -143,6 +143,8 @@ void MainWindow::onDarkThemeChanged(int tstate)
     bool state = Qt::Checked == tstate;
     config->SetDarkTheme(state);
     setUpStyleApp(*static_cast<QApplication *>(QApplication::instance()), state);
+
+    manager.notify(state);
 }
 
 void MainWindow::onComboBoxActivated(int index)
@@ -201,7 +203,10 @@ void MainWindow::InitPrivateParameters()
     sysTray = new USystemTray(this);
     timer = new UTimerHandler(config->GetInterval());
     web = new UWebHandler(this);
-    calendar = new CalendarDateHandler(ui->calendarWidget, ui->color1, ui->color2, ui->color3);
+
+    calendar = new CalendarDateHandler(ui->calendarWidget, ui->color1, ui->color2, ui->color3, config->isDarkTheme());
+    calendar->SetDarkTheme(config->isDarkTheme());
+    manager.subscribe(calendar);
 
     SetUpSettingsTab();
     setUpStyleApp(*static_cast<QApplication *>(QApplication::instance()), config->isDarkTheme());

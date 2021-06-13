@@ -62,6 +62,7 @@ signals:
 
 private:
     Content content;
+    ThemeManager manager;
 
     SwitchButton        *swButton   = nullptr;
     CalendarDateHandler *calendar   = nullptr;

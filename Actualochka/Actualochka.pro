@@ -58,6 +58,7 @@ SOURCES += \
 HEADERS += \
     include/General/configerexplorer.hpp \
     include/General/general.hpp \
+    include/General/themechanger.hpp \
     include/Mainwindow/mainwindow.hpp \
     include/System/calendardatehandler.hpp \
     include/System/serverjsonparser.hpp \

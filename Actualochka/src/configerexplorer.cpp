@@ -25,7 +25,7 @@ void ConfigerExplorer::OpenJsonConfig()
     QJsonDocument jsonDocument = QJsonDocument::fromJson(config.readAll());
     _jsonObject = new QJsonObject(jsonDocument.object());
 
-    /* means that config hadn't existed */
+    /* means that config hadn't exist */
     if (config.pos() == 0)
     {
         (*_jsonObject)["runs"] = 0;
