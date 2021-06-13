@@ -22,7 +22,7 @@ namespace act
     [[maybe_unused]] static constexpr quint64 oneHour = 1000 * 60 * 60;
     [[maybe_unused]] static quint64 Interval = 2880000;
 
-    static QString CurrnetVersion = "v1.2.6";
+    static QString CurrnetVersion = "v1.2.7";
     static QString MpeiActuallity = qgetenv("MPEI_ACT");
     static QString MpeiSchedule = qgetenv("MPEI_SCH");
     static QString MpeiVersion = qgetenv("MPEI_VER");

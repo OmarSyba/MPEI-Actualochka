@@ -80,8 +80,8 @@ RESOURCES += \
     resources/qlightstyle/style.qrc \
     resources/res.qrc
 
-win32:VERSION = 1.2.6.1
-else:VERSION = 1.2.6
+win32:VERSION = 1.2.7.1
+else:VERSION = 1.2.7
 
 WINRT_MANIFEST.publisher = mpei.space
 
