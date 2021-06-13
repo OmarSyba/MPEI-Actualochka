@@ -22,13 +22,13 @@ namespace act
     [[maybe_unused]] static constexpr quint64 oneHour = 1000 * 60 * 60;
     [[maybe_unused]] static quint64 Interval = 2880000;
 
-    static QString CurrnetVersion = "v1.2.7";
-    static QString MpeiActuallity = qgetenv("MPEI_ACT");
-    static QString MpeiSchedule = qgetenv("MPEI_SCH");
-    static QString MpeiVersion = qgetenv("MPEI_VER");
+    static QString CurrnetVersion = "v1.3.2";
+    static QString MpeiActuallity = "https://mpei-server.herokuapp.com/getActuality";
+    static QString MpeiSchedule = "https://mpei-server.herokuapp.com/getSchedule";
+    static QString MpeiVersion = "https://mpei-server.herokuapp.com/version";
     static QString ConfigPath = QString("C:/ProgramData/Actualochka") + QString("/config.json");
     static QString AppName = "Actualochka";
-    static QString MpeiGroupList = qgetenv("MPEI_GRP");
+    static QString MpeiGroupList = "https://mpei-server.herokuapp.com/getStudentsGroups";
 };
 
 #endif // GENERAL_HPP

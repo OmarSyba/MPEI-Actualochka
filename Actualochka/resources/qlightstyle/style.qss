@@ -1291,7 +1291,7 @@ QComboBox::item:alternate {
 }
 
 QComboBox::item:checked {
-  font-weight: bold;
+  /* font-weight: bold; */
 }
 
 QComboBox::item:selected {
@@ -1301,7 +1301,7 @@ QComboBox::item:selected {
 QComboBox::drop-down {
   subcontrol-origin: padding;
   subcontrol-position: top right;
-  width: 12px;
+  width: 30px;
   border-left: 1px solid #C9CDD0;
 }
 

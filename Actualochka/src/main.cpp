@@ -3,6 +3,7 @@
 #include <QProcess>
 #include <QStyleFactory>
 #include <QApplication>
+#include <QString>
 
 Q_LOGGING_CATEGORY(logDebug,    "Debug")
 Q_LOGGING_CATEGORY(logInfo,     "Information")
@@ -65,9 +66,16 @@ void setUpStyleApp(QApplication& app, bool isDark)
 
 int main(int argc, char *argv[])
 {
-
     QApplication a(argc, argv);
     setUpAppclication(a);
+
+    QDir dir("C:/ProgramData/Actualochka");
+
+    if (!dir.exists())
+    {
+        dir.mkdir("C:/ProgramData/Actualochka");
+    }
+
     gFile.reset(new QFile("C:/ProgramData/Actualochka/log.txt"));
     gFile.data()->open(QFile::Append | QFile::Text);
     qInstallMessageHandler(messageHandler);
@@ -78,6 +86,7 @@ int main(int argc, char *argv[])
      *          Изменить белый на бледный + календарь не изменяется
      * ************************************************************* */
     //setUpStyleApp(a);
+
 
     MainWindow w;
     QObject::connect(&w, &MainWindow::quitapp, &a, &QApplication::quit);
