@@ -61,6 +61,7 @@ void setUpStyleApp(QApplication& app)
 
 int main(int argc, char *argv[])
 {
+
     QApplication a(argc, argv);
     setUpAppclication(a);
     gFile.reset(new QFile("C:/ProgramData/Actualochka/log.txt"));
@@ -71,8 +72,8 @@ int main(int argc, char *argv[])
      *          Изменить белый на бледный + календарь не изменяется
      * ************************************************************* */
     //setUpStyleApp(a);
-    MainWindow w;
 
+    MainWindow w;
     QObject::connect(&w, &MainWindow::quitapp, &a, &QApplication::quit);
     QObject::connect(&w, &MainWindow::newversion, [&]()
     {
@@ -80,5 +81,6 @@ int main(int argc, char *argv[])
         QString Path = QString(QDir().currentPath() + "/maintenancetool.exe");
         P.start(Path);
     });
+
     return a.exec();
 }
