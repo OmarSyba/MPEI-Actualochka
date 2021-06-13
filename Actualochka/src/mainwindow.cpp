@@ -154,7 +154,6 @@ void MainWindow::onComboBoxActivated(int index)
 
     config->SetGroupName(title);
     config->SetGroupId(id);
-
     QString ScheduleShort = act::MpeiSchedule + "?group=" + QString::number(id);
 
     QString ScheduleMonthUrl = act::MpeiSchedule + "?group=" + QString::number(id) + "&start=" +
