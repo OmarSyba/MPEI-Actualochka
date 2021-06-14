@@ -54,6 +54,7 @@ QVector<CellData> ServerJsonParser::ParseJsonMonth(QNetworkReply *reply)
         CellData data;
 
         data.date = QDateTime::fromString(obj["date"].toString(), "yyyy.MM.dd");
+        data.date.setTime(QTime::fromString(obj["beginLesson"].toString()));
         data.lession = obj["discipline"].toString();
         data.lessionType = obj["kindOfWork"].toString();
 

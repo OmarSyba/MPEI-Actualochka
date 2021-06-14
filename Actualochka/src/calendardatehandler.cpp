@@ -36,6 +36,7 @@ void CalendarDateHandler::SetDarkTheme(bool isDark)
     QTextCharFormat form = QTextCharFormat();
     form.setBackground(QBrush(isDarkTheme ? QColor("#3e3e3e") : Qt::white));
     form.setForeground(QBrush(isDarkTheme ? Qt::white : QColor("#26262d")));
+
     for (auto &x : scheduleMonth)
     {
         if (x.lessionType == tr("Лекция"))
@@ -50,7 +51,8 @@ void CalendarDateHandler::SetDarkTheme(bool isDark)
         {
             form.setBackground(QBrush(QColor(isDarkTheme ? "#d6eee1" : "#22272E")));
         }
-        form.setToolTip(x.lession + " - " + x.lessionType);
+
+        form.setToolTip(calendar->dateTextFormat(x.date.date()).toolTip());
         form.setForeground(QBrush(isDarkTheme ? QColor("#26262d") : Qt::white ));
         calendar->setDateTextFormat(x.date.date(), form);
     }
@@ -99,7 +101,15 @@ void CalendarDateHandler::SetCalendarStyleByLessions()
         {
             form.setBackground(QBrush(QColor(isDarkTheme ? "#d6eee1" : "#22272E")));
         }
-        form.setToolTip(x.lession + " - " + x.lessionType);
+
+        QString toolTip = calendar->dateTextFormat(x.date.date()).toolTip();
+        QString newToolTip =    x.lession + " - " + x.lessionType + " " +
+                                x.date.time().toString("hh:mm");
+
+        form.setToolTip(toolTip.isEmpty() ?
+                            newToolTip :
+                            toolTip + "\n" + newToolTip);
+
         form.setForeground(QBrush(isDarkTheme ? QColor("#26262d") : Qt::white ));
         calendar->setDateTextFormat(x.date.date(), form);
     }
