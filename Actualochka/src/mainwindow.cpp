@@ -36,11 +36,13 @@ void MainWindow::InitWindowParameters()
 {
     qInfo(logInfo()) << " [" << __FUNCTION__ << "] --- " << "Set up window parameters";
     setWindowTitle(tr("Актуалочка"));
-    setFixedSize(QSize(640, 480));
+    resize(QSize(640, 480));
+    setMinimumSize(QSize(640, 480));
 
     ui->tabWidget->setTabText(0, tr("Информация"));
     ui->tabWidget->setTabText(1, tr("Настройки"));
     ui->tabWidget->setTabText(2, tr("Календарь"));
+    ui->tabWidget->setTabText(3, tr("Конспекты"));
     ui->tabWidget->setCurrentIndex(0);
     ui->textEditShedule->setReadOnly(true);
     ui->labelVersion->setText(act::CurrnetVersion);
