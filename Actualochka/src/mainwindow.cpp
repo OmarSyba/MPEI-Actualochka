@@ -6,6 +6,7 @@
 #include <QCheckBox>
 #include <QTimer>
 #include <QSettings>
+
 //#define NORECIEVE
 
 MainWindow::MainWindow(QWidget *parent)

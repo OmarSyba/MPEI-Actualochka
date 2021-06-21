@@ -14,7 +14,7 @@ CONFIG(debug, debug|release) {
     DESTDIR = $$OUT_PWD/../../ActualochkaRelease
 }
 
-OPENSSL = C:\Other\Openssl
+OPENSSL = D:/Frameworks/Qt/Tools/OpenSSL/Win_x64/bin
 win32 {
     EXTRA_BINFILES += \
         $$OPENSSL\libcrypto-1_1-x64.dll \
@@ -80,8 +80,8 @@ RESOURCES += \
     resources/qlightstyle/style.qrc \
     resources/res.qrc
 
-win32:VERSION = 1.3.3.0
-else:VERSION = 1.3.3
+win32:VERSION = 1.3.5.0
+else:VERSION = 1.3.5
 
 WINRT_MANIFEST.publisher = mpei.space
 
