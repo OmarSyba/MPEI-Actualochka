@@ -406,6 +406,11 @@
        <attribute name="title">
         <string>Страница</string>
        </attribute>
+       <layout class="QHBoxLayout" name="horizontalLayout_8">
+        <item>
+         <widget class="QTextEdit" name="textEdit"/>
+        </item>
+       </layout>
       </widget>
      </widget>
     </item>

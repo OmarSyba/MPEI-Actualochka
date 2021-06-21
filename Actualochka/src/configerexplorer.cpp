@@ -43,6 +43,7 @@ void ConfigerExplorer::OpenJsonConfig()
 
 void ConfigerExplorer::SaveConfigIntoFile()
 {
+    qInfo(logInfo()) << " [" << __FUNCTION__ << "] --- " << "Save config function called";
     if (!_jsonObject)
     {
         qCritical(logCritical()) << " [" << __FUNCTION__ << "] --- " << "Can't save config. Json object doesn't exist";
@@ -56,6 +57,7 @@ void ConfigerExplorer::SaveConfigIntoFile()
     }
     else
     {
+        qInfo(logInfo()) << " [" << __FUNCTION__ << "] --- " << "Save config start";
         (*_jsonObject)["runs"]       = QString::number(_cData.appRun).toStdString().c_str();
         (*_jsonObject)["interval"]   = QString::number(_cData.interval).toStdString().c_str();
         (*_jsonObject)["autorun"]    = _cData.isAutoRunEnable;
@@ -66,6 +68,7 @@ void ConfigerExplorer::SaveConfigIntoFile()
 
         config.write(QJsonDocument(*_jsonObject).toJson(QJsonDocument::Indented));
         config.close();
+        qInfo(logInfo()) << " [" << __FUNCTION__ << "] --- " << "Save config end";
     }
 }
 
