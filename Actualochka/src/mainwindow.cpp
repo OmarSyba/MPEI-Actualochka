@@ -6,7 +6,6 @@
 #include <QCheckBox>
 #include <QTimer>
 #include <QSettings>
-
 //#define NORECIEVE
 
 MainWindow::MainWindow(QWidget *parent)
@@ -36,11 +35,13 @@ void MainWindow::InitWindowParameters()
 {
     qInfo(logInfo()) << " [" << __FUNCTION__ << "] --- " << "Set up window parameters";
     setWindowTitle(tr("Актуалочка"));
-    setFixedSize(QSize(640, 480));
+    resize(QSize(640, 480));
+    setMinimumSize(QSize(640, 480));
 
     ui->tabWidget->setTabText(0, tr("Информация"));
     ui->tabWidget->setTabText(1, tr("Настройки"));
     ui->tabWidget->setTabText(2, tr("Календарь"));
+    ui->tabWidget->setTabText(3, tr("Конспекты"));
     ui->tabWidget->setCurrentIndex(0);
     ui->textEditShedule->setReadOnly(true);
     ui->labelVersion->setText(act::CurrnetVersion);
@@ -154,8 +155,9 @@ void MainWindow::onComboBoxActivated(int index)
 
     config->SetGroupName(title);
     config->SetGroupId(id);
-    QString ScheduleShort = act::MpeiSchedule + "?group=" + QString::number(id);
 
+#ifndef NORECIEVE
+    QString ScheduleShort = act::MpeiSchedule + "?group=" + QString::number(id);
     QString ScheduleMonthUrl = act::MpeiSchedule + "?group=" + QString::number(id) + "&start=" +
        QDate().currentDate().toString("yyyy.MM.dd") +
        "&finish=" + QDate().currentDate().addMonths(3).toString("yyyy.MM.dd");
@@ -165,6 +167,7 @@ void MainWindow::onComboBoxActivated(int index)
 
     connect(namA, SIGNAL(finished(QNetworkReply*)), this, SLOT(onResultSchedule(QNetworkReply*)));
     connect(namS, SIGNAL(finished(QNetworkReply*)), this, SLOT(onResultScheduleMonth(QNetworkReply*)));
+#endif
     qInfo(logInfo()) << " [" << __FUNCTION__ << "] --- " << "Combo box activated";
 }
 

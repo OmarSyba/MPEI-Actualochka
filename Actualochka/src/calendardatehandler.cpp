@@ -76,7 +76,7 @@ void CalendarDateHandler::SetCalendarStyleByLessions()
 
     calendar->setStyleSheet("QTableView { selection-background-color: #26262d; } ");
     calendar->setMinimumDate(QDate().currentDate().addDays(-1));
-    calendar->setMaximumDate(scheduleMonth.last().date.date());
+    calendar->setMaximumDate(!scheduleMonth.empty() ? scheduleMonth.last().date.date() : QDate().currentDate().addDays(30));
 
     QTextCharFormat form = QTextCharFormat();
     for (QDate date = calendar->minimumDate(); date != calendar->maximumDate(); date = date.addDays(1))

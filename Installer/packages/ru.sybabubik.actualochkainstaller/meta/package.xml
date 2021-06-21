@@ -2,11 +2,11 @@
 <Package>
     <DisplayName>Actualochka Installer</DisplayName>
     <Description>The main component</Description>
-    <Version>1.3.2</Version>
+    <Version>1.3.3</Version>
 	<Licenses>
         <License name="Beer Public License Agreement" file="license.txt"/>
     </Licenses>
-    <ReleaseDate>2021-06-13</ReleaseDate>
+    <ReleaseDate>2021-06-21</ReleaseDate>
         <Default>true</Default>
     <Name>ru.sybabubik.actualochkainstaller</Name>
     <Script>installscript.qs</Script>
