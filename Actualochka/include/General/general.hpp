@@ -21,6 +21,7 @@ namespace act
 {
     [[maybe_unused]] static constexpr quint64 oneHour = 1000 * 60 * 60;
     [[maybe_unused]] static quint64 Interval = 2880000;
+    [[maybe_unused]] static quint16 Group40a20 = 12861;
 
     static QString CurrnetVersion = "v1.3.5";
     static QString MpeiActuallity = "https://mpei-server.herokuapp.com/getActuality";
