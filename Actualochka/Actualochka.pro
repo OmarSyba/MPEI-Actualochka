@@ -46,6 +46,7 @@ unix:OBJECTS_DIR = ../../common/build/o/unix
 
 SOURCES += \
     src/calendardatehandler.cpp \
+    src/contentfileio.cpp \
     src/main.cpp \
     src/mainwindow.cpp \
     src/serverjsonparser.cpp \
@@ -61,6 +62,7 @@ HEADERS += \
     include/General/themechanger.hpp \
     include/Mainwindow/mainwindow.hpp \
     include/System/calendardatehandler.hpp \
+    include/System/contentfileio.hpp \
     include/System/serverjsonparser.hpp \
     include/System/usystemtray.hpp \
     include/System/utimerhandler.hpp \
