@@ -14,6 +14,21 @@ Q_DECLARE_LOGGING_CATEGORY(logWarning)
 Q_DECLARE_LOGGING_CATEGORY(logCritical)
 Q_DECLARE_LOGGING_CATEGORY(logFatal)
 
+struct CellData
+{
+    QDateTime date;
+    QString lessionType;
+    QString lession;
+};
+
+struct Content
+{
+    QString Actuallity;
+    QVector<QString> ScheduleWeek;
+    QVector<CellData> ScheduleMonth;
+    QMap<QString, quint32> Groups;
+};
+
 static QScopedPointer<QFile> gFile;
 void setUpStyleApp(QApplication& app, bool isDark);
 

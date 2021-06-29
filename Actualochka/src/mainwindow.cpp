@@ -240,6 +240,7 @@ void MainWindow::GetListOfGroups(QNetworkReply *reply)
         ui->comboBoxGroup->addItems(content.Groups.keys());
         auto containerKeys = content.Groups.keys();
         auto containerValues = content.Groups.values();
+
         for (quint32 idx = 0; idx < containerKeys.length(); ++idx)
         {
             if (config->GetGroupId() == containerValues.at(idx))
@@ -290,6 +291,7 @@ void MainWindow::SetUpConnects()
 
     connect(sysTray->GetExitAction(), &QAction::triggered, this, [&]()
     {
+        contentManager.saveContent(ContentFile { ui->textEditActuallity->toPlainText(), ui->textEditShedule->toPlainText() });
         emit quitapp();
     });
     qWarning(logWarning()) << " [" << __FUNCTION__ << "] --- " << "Close connect";

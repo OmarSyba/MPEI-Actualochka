@@ -10,19 +10,12 @@
 #include "include/System/uwebhandler.hpp"
 #include "include/System/serverjsonparser.hpp"
 #include "include/System/calendardatehandler.hpp"
+#include "include/System/contentfileio.hpp"
 #include "include/UI/switchbutton.hpp"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
-
-struct Content
-{
-    QString Actuallity;
-    QVector<QString> ScheduleWeek;
-    QVector<CellData> ScheduleMonth;
-    QMap<QString, quint32> Groups;
-};
 
 class MainWindow : public QMainWindow
 {
@@ -63,6 +56,7 @@ signals:
 private:
     Content content;
     ThemeManager manager;
+    ContentFileIO contentManager;
 
     SwitchButton        *swButton   = nullptr;
     CalendarDateHandler *calendar   = nullptr;
