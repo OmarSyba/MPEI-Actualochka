@@ -291,7 +291,7 @@ void MainWindow::SetUpConnects()
 
     connect(sysTray->GetExitAction(), &QAction::triggered, this, [&]()
     {
-        contentManager.saveContent(ContentFile { ui->textEditActuallity->toPlainText(), ui->textEditShedule->toPlainText() });
+        contentManager.saveContent(Content { ui->textEditActuallity->toPlainText(), content.ScheduleWeek, content.ScheduleMonth});
         emit quitapp();
     });
     qWarning(logWarning()) << " [" << __FUNCTION__ << "] --- " << "Close connect";

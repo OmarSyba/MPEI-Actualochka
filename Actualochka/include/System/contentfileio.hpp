@@ -8,22 +8,15 @@
 
 #include "include/General/general.hpp"
 
-struct ContentFile
-{
-    QString Actualochka;
-    QString ScheduleWeek;
-    CellData ScheduleMonth;
-};
-
 class ContentFileIO
 {
 public:
     ContentFileIO(QString filePath = Path);
     ~ContentFileIO();
 
-    ContentFile extractContent();
-    qint16 saveContent(ContentFile file);
-    void saveContent(QString &tAct, QString &tSchWeek, CellData &tSchMonth);
+    Content extractContent();
+    qint16 saveContent(Content file);
+    void saveContent(QString &tAct, QVector<QString> &tSchWeek, QVector<CellData> &tSchMonth);
 
 private:
     void open();

@@ -4,7 +4,6 @@
 ContentFileIO::ContentFileIO(QString filePath)
 {
     _contentFile = new QFile(filePath);
-    open();
 }
 
 ContentFileIO::~ContentFileIO()
@@ -13,15 +12,15 @@ ContentFileIO::~ContentFileIO()
     delete _contentFile;
 }
 
-ContentFile ContentFileIO::extractContent()
+Content ContentFileIO::extractContent()
 {
     open();
 
-    ContentFile content;
+    Content content;
     if (!_contentFile->isOpen())
     {
-        content.Actualochka = content.ScheduleWeek = "Content file not opened to read";
-        qWarning(logWarning()) << " [" << __FUNCTION__ << "] --- " << content.Actualochka;
+        content.Actuallity = "Content file not opened to read";
+        qWarning(logWarning()) << " [" << __FUNCTION__ << "] --- " << content.Actuallity;
         return content;
     }
 
@@ -30,7 +29,7 @@ ContentFile ContentFileIO::extractContent()
     return content;
 }
 
-qint16 ContentFileIO::saveContent(ContentFile content)
+qint16 ContentFileIO::saveContent(Content content)
 {
     open();
     QJsonObject jsonObject;
@@ -41,8 +40,24 @@ qint16 ContentFileIO::saveContent(ContentFile content)
         return -1;
     }
 
-    jsonObject["Actualochka"] = content.Actualochka;
-    jsonObject["Schedule-Week"] = content.ScheduleWeek;
+    QJsonArray arrayMonth;
+    QJsonArray arrayWeek;
+
+    for (auto& cellData : content.ScheduleMonth)
+    {
+        arrayMonth.append(cellData.date.toString()
+                     + "::" + cellData.lession
+                     + "::" + cellData.lessionType);
+    }
+
+    for (auto& scheduleWeek : content.ScheduleWeek)
+    {
+        arrayWeek.append(scheduleWeek);
+    }
+
+    jsonObject["Actualochka"] = content.Actuallity;
+    jsonObject["Schedule-Week"] = arrayWeek;
+    jsonObject["Schedule-Month"] = arrayMonth;
 
     _contentFile->write(QJsonDocument(jsonObject).toJson(QJsonDocument::Indented));
 
@@ -50,9 +65,9 @@ qint16 ContentFileIO::saveContent(ContentFile content)
     return 0;
 }
 
-void ContentFileIO::saveContent(QString &tAct, QString &tSchWeek, CellData &tSchMonth)
+void ContentFileIO::saveContent(QString &tAct, QVector<QString> &tSchWeek, QVector<CellData> &tSchMonth)
 {
-    ContentFile content { tAct, tSchWeek, tSchMonth };
+    Content content { tAct, tSchWeek, tSchMonth };
     saveContent(content);
 }
 
@@ -69,7 +84,19 @@ void ContentFileIO::close()
     _contentFile->close();
 }
 
+// TODO
+
 QJsonObject ContentFileIO::getActualochka()
+{
+
+}
+
+QJsonObject ContentFileIO::getScheduleWeek()
+{
+
+}
+
+QJsonObject ContentFileIO::getScheduleMonth()
 {
 
 }
