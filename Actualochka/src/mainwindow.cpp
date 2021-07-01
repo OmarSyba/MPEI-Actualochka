@@ -20,9 +20,6 @@ MainWindow::MainWindow(QWidget *parent)
 #ifndef NORECIEVE
     MakeReceive();
 #endif
-
-    content = contentManager.extractContent();
-    ui->textEditActuallity->setText(content.Actuallity);
 }
 
 MainWindow::~MainWindow()
