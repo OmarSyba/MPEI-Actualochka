@@ -7,7 +7,7 @@
 #include <QTimer>
 #include <QSettings>
 
-//#define NORECIEVE
+#define NORECIEVE
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -20,6 +20,9 @@ MainWindow::MainWindow(QWidget *parent)
 #ifndef NORECIEVE
     MakeReceive();
 #endif
+
+    content = contentManager.extractContent();
+    ui->textEditActuallity->setText(content.Actuallity);
 }
 
 MainWindow::~MainWindow()

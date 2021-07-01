@@ -22,9 +22,9 @@ private:
     void open();
     void close();
 
-    QJsonObject getActualochka();
-    QJsonObject getScheduleWeek();
-    QJsonObject getScheduleMonth();
+    QString getActualochka(QJsonObject tObj);
+    QVector<QString> getScheduleWeek(QJsonObject tObj);
+    QVector<CellData> getScheduleMonth(QJsonObject tObj);
 
 private:
     static QString Path;
