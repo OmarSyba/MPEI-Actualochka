@@ -3,24 +3,17 @@
 
 #include <QObject>
 #include <QDate>
-
 #include <QtNetwork/QNetworkReply>
-
 #include <QJsonObject>
 #include <QJsonDocument>
 #include <QJsonArray>
+
+#include "include/General/general.hpp"
 
 enum EReply_Type
 {
     ScheduleWeek = 0,
     Actualochka = 1
-};
-
-struct CellData
-{
-    QDateTime date;
-    QString lessionType;
-    QString lession;
 };
 
 class ServerJsonParser : public QObject

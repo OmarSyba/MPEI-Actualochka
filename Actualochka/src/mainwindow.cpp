@@ -57,55 +57,6 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
     }
 }
 
-void MainWindow::onResultActually(QNetworkReply *reply)
-{
-    qInfo(logInfo()) << " [" << __FUNCTION__ << "] --- " << "Get result actuallity";
-    content.Actuallity = reply->error() == QNetworkReply::NoError ?
-                ServerJsonParser::ParseJsonFromServer(reply, EReply_Type::Actualochka).at(0) :
-                reply->errorString();
-
-    if (config->isNotifyEnabled())
-    {
-        sysTray->showMessage(tr("Актуалочка"), content.Actuallity, QSystemTrayIcon::MessageIcon(QSystemTrayIcon::NoIcon));
-    }
-    ui->textEditActuallity->setText(content.Actuallity);
-    reply->deleteLater();
-
-    qInfo(logInfo()) << " [" << __FUNCTION__ << "] --- " << "Actualochka reply finished";
-}
-
-void MainWindow::onResultSchedule(QNetworkReply *reply)
-{
-    qInfo(logInfo()) << " [" << __FUNCTION__ << "] --- " << "Get result schedule";
-    content.ScheduleWeek = reply->error() == QNetworkReply::NoError ?
-                ServerJsonParser::ParseJsonFromServer(reply, EReply_Type::ScheduleWeek):
-                QVector<QString>(reply->errorString());
-
-    ui->textEditShedule->clear();
-    for (auto&x : content.ScheduleWeek)
-    {
-        QString ExistingText = ui->textEditShedule->toPlainText();
-        ui->textEditShedule->setText(!ExistingText.isEmpty() ? ExistingText + "\n\n" + x : x);
-    }
-    reply->deleteLater();
-
-    qInfo(logInfo()) << " [" << __FUNCTION__ << "] --- " << "Schedule reply finished";
-}
-
-void MainWindow::onResultScheduleMonth(QNetworkReply *reply)
-{
-    qInfo(logInfo()) << " [" << __FUNCTION__ << "] --- " << "Get result schedule month";
-    if (reply->error() == QNetworkReply::NoError)
-    {
-        content.ScheduleMonth = ServerJsonParser::ParseJsonMonth(reply);
-        calendar->SetScheduleMonth(content.ScheduleMonth);
-        calendar->SetCalendarStyleByLessions();
-    }
-    reply->deleteLater();
-
-    qInfo(logInfo()) << " [" << __FUNCTION__ << "] --- " << "Schedule month reply finished";
-}
-
 void MainWindow::onAutoRunChanged(int state)
 {
     if (state == Qt::Checked)
@@ -157,14 +108,18 @@ void MainWindow::onComboBoxActivated(int index)
     config->SetGroupName(title);
     config->SetGroupId(id);
 
+    id != act::Group40a20 ?
+                ui->textEditActuallity->setText("Для вашей группы актуалочка недоступна") :
+                ui->textEditActuallity->setText(content.Actuallity);
+
 #ifndef NORECIEVE
     QString ScheduleShort = act::MpeiSchedule + "?group=" + QString::number(id);
     QString ScheduleMonthUrl = act::MpeiSchedule + "?group=" + QString::number(id) + "&start=" +
        QDate().currentDate().toString("yyyy.MM.dd") +
        "&finish=" + QDate().currentDate().addMonths(3).toString("yyyy.MM.dd");
 
-    auto namA = web->AccsessUrl(ScheduleShort);
-    auto namS = web->AccsessUrl(ScheduleMonthUrl);
+    auto namA = web->accsessUrl(ScheduleShort);
+    auto namS = web->accsessUrl(ScheduleMonthUrl);
 
     connect(namA, SIGNAL(finished(QNetworkReply*)), this, SLOT(onResultSchedule(QNetworkReply*)));
     connect(namS, SIGNAL(finished(QNetworkReply*)), this, SLOT(onResultScheduleMonth(QNetworkReply*)));
@@ -228,27 +183,6 @@ void MainWindow::SetUpSettingsTab()
     qInfo(logInfo()) << " [" << __FUNCTION__ << "] --- " << "Set up settings tab";
 }
 
-void MainWindow::GetListOfGroups(QNetworkReply *reply)
-{
-    if (reply->error() == QNetworkReply::NoError)
-    {
-        content.Groups = ServerJsonParser::ParseGroups(reply);
-        ui->comboBoxGroup->addItems(content.Groups.keys());
-        auto containerKeys = content.Groups.keys();
-        auto containerValues = content.Groups.values();
-        for (quint32 idx = 0; idx < containerKeys.length(); ++idx)
-        {
-            if (config->GetGroupId() == containerValues.at(idx))
-            {
-                ui->comboBoxGroup->setCurrentIndex(idx);
-                break;
-            }
-        }
-    }
-    reply->deleteLater();
-    qInfo(logInfo()) << " [" << __FUNCTION__ << "] --- " << "Group list reply finished";
-}
-
 void MainWindow::onResultCheckForUpdate(QNetworkReply *reply)
 {
      QString version = "v" + ServerJsonParser::ParseVersion(reply);
@@ -286,6 +220,7 @@ void MainWindow::SetUpConnects()
 
     connect(sysTray->GetExitAction(), &QAction::triggered, this, [&]()
     {
+        contentManager.saveContent(Content { ui->textEditActuallity->toPlainText(), content.ScheduleWeek, content.ScheduleMonth});
         emit quitapp();
     });
     qWarning(logWarning()) << " [" << __FUNCTION__ << "] --- " << "Close connect";
@@ -300,7 +235,7 @@ void MainWindow::SetUpConnects()
 
     connect(ui->checkupdateButton, &QPushButton::clicked, this, [&]()
     {
-        auto namVersion = web->AccsessUrl(act::MpeiVersion);
+        auto namVersion = web->accsessUrl(act::MpeiVersion);
         connect(namVersion, SIGNAL(finished(QNetworkReply*)), this, SLOT(onResultCheckForUpdate(QNetworkReply*)));
     });
 
@@ -314,14 +249,6 @@ void MainWindow::SetUpConnects()
     connect(ui->spinBoxInterval, SIGNAL(valueChanged(int)), this, SLOT(onSpinBoxValueChanged(int)));
     connect(ui->checkBoxDarkTheme, SIGNAL(stateChanged(int)), this, SLOT(onDarkThemeChanged(int)));
 
-//    if (ServerJsonParser::isOnline())
-//    {
-//        ConnectOnlineSlots();
-//    }
-//    else
-//    {
-//        qCritical(logCritical()) << " [" << __FUNCTION__ << "] --- " << "Device offline";
-//    }
     ConnectOnlineSlots();
     qCritical(logCritical()) << " [" << __FUNCTION__ << "] --- " << "Set up connects";
 }
@@ -339,19 +266,55 @@ void MainWindow::MakeReceive()
                     QDate().currentDate().toString("yyyy.MM.dd") +
                     "&finish=" + QDate().currentDate().addMonths(3).toString("yyyy.MM.dd");
 
-    auto namActuallity = web->AccsessUrl(act::MpeiActuallity);
-    auto namScheduleWeek = web->AccsessUrl(groupUrl);
-    auto namMonth = web->AccsessUrl(ScheduleMonthUrl);
-    auto namGroups = web->AccsessUrl(act::MpeiGroupList);
-
-    connect(namActuallity, SIGNAL(finished(QNetworkReply*)), this, SLOT(onResultActually(QNetworkReply*)));
-    connect(namScheduleWeek, SIGNAL(finished(QNetworkReply*)), this, SLOT(onResultSchedule(QNetworkReply*)));
-    connect(namMonth, SIGNAL(finished(QNetworkReply*)), this, SLOT(onResultScheduleMonth(QNetworkReply*)));
-    connect(namGroups, SIGNAL(finished(QNetworkReply*)), this, SLOT(GetListOfGroups(QNetworkReply*)));
+    web->makeRequest(std::initializer_list<QString> {act::MpeiActuallity, groupUrl, ScheduleMonthUrl, act::MpeiGroupList });
 }
 
 void MainWindow::ConnectOnlineSlots()
 {
+    connect(web, &UWebHandler::actuallity, [&](QString tActuallity)
+    {
+        content.Actuallity = tActuallity;
+        if (config->isNotifyEnabled())
+        {
+            sysTray->showMessage(tr("Актуалочка"), content.Actuallity, QSystemTrayIcon::MessageIcon(QSystemTrayIcon::NoIcon));
+        }
+        ui->textEditActuallity->setText(content.Actuallity);
+    });
+
+    connect(web, &UWebHandler::scheduleweek, [&](QStringList tSchedule)
+    {
+        content.ScheduleWeek = tSchedule;
+        ui->textEditShedule->clear();
+        for (auto&x : content.ScheduleWeek)
+        {
+            QString ExistingText = ui->textEditShedule->toPlainText();
+            ui->textEditShedule->setText(!ExistingText.isEmpty() ? ExistingText + "\n\n" + x : x);
+        }
+    });
+
+    connect(web, &UWebHandler::schedulemonth, [&](QVector<CellData> tCellDatas)
+    {
+        content.ScheduleMonth = tCellDatas;
+        calendar->SetScheduleMonth(content.ScheduleMonth);
+        calendar->SetCalendarStyleByLessions();
+    });
+
+    connect(web, &UWebHandler::listgroups, [&](QMap<QString, quint32> tGroups)
+    {
+        content.Groups = tGroups;
+        ui->comboBoxGroup->addItems(content.Groups.keys());
+        auto containerKeys = content.Groups.keys();
+        auto containerValues = content.Groups.values();
+
+        for (quint32 idx = 0; idx < containerKeys.length(); ++idx)
+        {
+            if (config->GetGroupId() == containerValues.at(idx))
+            {
+                ui->comboBoxGroup->setCurrentIndex(idx);
+                break;
+            }
+        }
+    });
     connect(timer->GetCurrentTimer(), &QTimer::timeout, this, &MainWindow::MakeReceive);
     connect(ui->UpdateButton, &QPushButton::clicked, this, &MainWindow::MakeReceive);
 }
