@@ -30,10 +30,6 @@ public:
     void InitWindowParameters();
 
 public slots:
-    void onResultSchedule(QNetworkReply *reply);
-    void onResultActually(QNetworkReply *reply);
-    void onResultScheduleMonth(QNetworkReply *reply);
-    void GetListOfGroups(QNetworkReply *reply);
     void onResultCheckForUpdate(QNetworkReply *reply);
     void onAutoRunChanged(int state);
     void onNotifyChanged(int state);
