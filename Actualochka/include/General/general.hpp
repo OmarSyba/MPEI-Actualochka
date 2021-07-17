@@ -5,6 +5,7 @@
 #include <QDir>
 #include <QLoggingCategory>
 #include <QApplication>
+#include <windows.h>
 
 #include "include/General/themechanger.hpp"
 
@@ -30,6 +31,8 @@ struct Content
 };
 
 static QScopedPointer<QFile> gFile;
+
+qint16 systemStyle();
 void setUpStyleApp(QApplication& app, bool isDark);
 
 namespace act

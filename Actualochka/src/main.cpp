@@ -1,5 +1,6 @@
 #include "include/Mainwindow/mainwindow.hpp"
 #include "include/General/general.hpp"
+
 #include <QProcess>
 #include <QStyleFactory>
 #include <QApplication>
@@ -64,13 +65,26 @@ void setUpStyleApp(QApplication& app, bool isDark)
     qInfo(logInfo()) << " [" << __FUNCTION__ << "] --- " << "Style changed" << stylePath;
 }
 
+qint16 systemStyle()
+{
+#ifdef _WIN32
+    //TODO Set default color by system settings on first run
+
+    DWORD systemColor = GetSysColor(COLOR_DESKTOP);
+    qInfo(logInfo()) << " [" << __FUNCTION__ << "] --- " << "System color : " << systemColor;
+#elif _linux_
+
+#endif
+
+    return 0;
+}
+
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
     setUpAppclication(a);
 
     QDir dir("C:/ProgramData/Actualochka");
-
     if (!dir.exists())
     {
         dir.mkdir("C:/ProgramData/Actualochka");
@@ -81,12 +95,7 @@ int main(int argc, char *argv[])
     qInstallMessageHandler(messageHandler);
 
     qInfo(logInfo()) << "\n\n\n\t\t*** Start Application at " << QDateTime::currentDateTime() << " ***\n";
-
-    /* **************************************************************
-     *          Изменить белый на бледный + календарь не изменяется
-     * ************************************************************* */
-    //setUpStyleApp(a);
-
+    systemStyle();
 
     MainWindow w;
     QObject::connect(&w, &MainWindow::quitapp, &a, &QApplication::quit);
