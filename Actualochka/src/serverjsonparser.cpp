@@ -102,7 +102,7 @@ QVector<QString> ServerJsonParser::ParseJson(QJsonArray &tjsonArray)
         QString lecturer            = obj["lecturer"].toString();
 
         /*                                        *
-         *      Change yyyy.MM.dd to dd.MM.yyyy
+         *      Changing yyyy.MM.dd to dd.MM.yyyy
          *                                        */
         QStringList dateList = date.split(".");
         date = QDate(dateList[0].toInt(), dateList[1].toInt(), dateList[2].toInt()).toString("dd.MM.yyyy");

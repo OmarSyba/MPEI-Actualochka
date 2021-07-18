@@ -127,7 +127,7 @@ quint64 ConfigerExplorer::GetInterval() const
 
 bool ConfigerExplorer::isFirstRun() const
 {
-    return !_cData.appRun;
+    return _cData.appRun == 1;
 }
 
 bool ConfigerExplorer::isAutoRunEnabled() const
