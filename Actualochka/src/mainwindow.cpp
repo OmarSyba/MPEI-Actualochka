@@ -158,6 +158,11 @@ void MainWindow::InitPrivateParameters()
     config = new ConfigerExplorer(this);
     config->OpenJsonConfig();
 
+    if (config->isFirstRun())
+    {
+        config->SetDarkTheme(systemStyle() != 1);
+    }
+
     sysTray = new USystemTray(this);
     timer = new UTimerHandler(config->GetInterval());
     web = new UWebHandler(this);

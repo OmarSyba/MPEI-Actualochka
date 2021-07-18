@@ -5,7 +5,9 @@
 #include <QDir>
 #include <QLoggingCategory>
 #include <QApplication>
+#ifdef _WIN32
 #include <windows.h>
+#endif
 
 #include "include/General/themechanger.hpp"
 

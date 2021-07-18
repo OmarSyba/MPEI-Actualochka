@@ -68,10 +68,12 @@ void setUpStyleApp(QApplication& app, bool isDark)
 qint16 systemStyle()
 {
 #ifdef _WIN32
-    //TODO Set default color by system settings on first run
+    qint32 colorValue = 0;
+    DWORD bufferSize = 8192;
+    LPCWSTR regPath = L"Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize";
+    RegGetValue(HKEY_CURRENT_USER, regPath, L"AppsUseLightTheme", RRF_RT_ANY, NULL, (PVOID)&colorValue, &bufferSize);
 
-    DWORD systemColor = GetSysColor(COLOR_DESKTOP);
-    qInfo(logInfo()) << " [" << __FUNCTION__ << "] --- " << "System color : " << systemColor;
+    return colorValue;
 #elif _linux_
 
 #endif
