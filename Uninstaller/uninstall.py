@@ -1,7 +1,6 @@
 import os
 import pathlib
 import winreg as wr
-import time
 
 from tkinter import *
 from tkinter import ttk
@@ -11,7 +10,6 @@ registry_key = "Software\\Microsoft\\Windows\\CurrentVersion\\Run"
 keyName = "Actualochka"
 
 program_data = "C:\\ProgramData\\Actualochka"
-
 
 class MainWindow:
     _window = Tk()
@@ -68,7 +66,6 @@ class ActRemover:
         fp.write("for %%i in (*.*) do if not \"%%i\"==\"temporary_remover.bat\" del /q \"%%i\"")
         fp.write("\ndel /a /q *")
         fp.close()
-        time.sleep(1)
         os.startfile("temporary_remover.bat")
 
     def remove_from_programdata(self):
@@ -90,8 +87,10 @@ class ActRemover:
 
 def main():
     window = MainWindow()
-    act = ActRemover()
-    act.remove_actualochka()
+
+    # Uncomment to start remove testing (unfinished :c)
+    # act = ActRemover()
+    # act.remove_actualochka()
 
 
 if __name__ == '__main__':
