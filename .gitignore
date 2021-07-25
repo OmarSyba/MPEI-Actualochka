@@ -1,6 +1,15 @@
 # This file is used to ignore files which are generated
 # ----------------------------------------------------------------------------
 
+.idea
+bin
+dist
+build
+__pycache__
+uninstall
+
+*.spec
+
 *~
 *.autosave
 *.a
