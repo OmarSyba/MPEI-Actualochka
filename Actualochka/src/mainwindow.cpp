@@ -44,7 +44,7 @@ void MainWindow::InitWindowParameters()
     ui->tabWidget->setTabText(2, tr("Календарь"));
     ui->tabWidget->setTabText(3, tr("Конспекты"));
     ui->tabWidget->setCurrentIndex(0);
-    ui->textEditShedule->setReadOnly(true);
+    ui->textEditSchedule->setReadOnly(true);
     ui->labelVersion->setText(act::CurrnetVersion);
 }
 
@@ -289,11 +289,18 @@ void MainWindow::ConnectOnlineSlots()
     connect(web, &UWebHandler::scheduleweek, [&](QStringList tSchedule)
     {
         content.ScheduleWeek = tSchedule;
-        ui->textEditShedule->clear();
+        ui->textEditSchedule->clear();
+
+        if (tSchedule.isEmpty())
+        {
+            ui->textEditSchedule->setText(tr("На этой неделе нет занятий, отдыхай"));
+            return;
+        }
+
         for (auto&x : content.ScheduleWeek)
         {
-            QString ExistingText = ui->textEditShedule->toPlainText();
-            ui->textEditShedule->setText(!ExistingText.isEmpty() ? ExistingText + "\n\n" + x : x);
+            QString ExistingText = ui->textEditSchedule->toPlainText();
+            ui->textEditSchedule->setText(!ExistingText.isEmpty() ? ExistingText + "\n\n" + x : x);
         }
     });
 
