@@ -45,6 +45,7 @@ macx:OBJECTS_DIR = ../common/build/o/macx
 unix:OBJECTS_DIR = ../common/build/o/unix
 
 SOURCES += \
+    src/adminloginwindow.cpp \
     src/calendardatehandler.cpp \
     src/contentfileio.cpp \
     src/main.cpp \
@@ -60,6 +61,7 @@ HEADERS += \
     include/General/configerexplorer.hpp \
     include/General/general.hpp \
     include/General/themechanger.hpp \
+    include/Mainwindow/adminloginwindow.hpp \
     include/Mainwindow/mainwindow.hpp \
     include/System/calendardatehandler.hpp \
     include/System/contentfileio.hpp \
@@ -70,6 +72,7 @@ HEADERS += \
     include/UI/switchbutton.hpp
 
 FORMS += \
+    ui/adminloginwindow.ui \
     ui/mainwindow.ui
 
 # Default rules for deployment.
