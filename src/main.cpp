@@ -101,17 +101,19 @@ int main(int argc, char *argv[])
 
     AdminLogInWindow lw;
     lw.setModal(true);
-    lw.exec() == QDialog::Accepted
 
-
-    MainWindow w;
-    QObject::connect(&w, &MainWindow::quitapp, &a, &QApplication::quit);
-    QObject::connect(&w, &MainWindow::newversion, [&]()
+    if (lw.exec() == AdminLogInWindow::DialogCode::UserAccepted)
     {
-        QProcess P;
-        QString Path = QString(QDir().currentPath() + "/maintenancetool.exe");
-        P.start(Path);
-    });
-
-    return a.exec();
+        MainWindow w;
+        w.show();
+        QObject::connect(&w, &MainWindow::quitapp, &a, &QApplication::quit);
+        QObject::connect(&w, &MainWindow::newversion, [&]()
+        {
+            QProcess P;
+            QString Path = QString(QDir().currentPath() + "/maintenancetool.exe");
+            P.start(Path);
+        });
+        return a.exec();
+    }
+    return 0;
 }

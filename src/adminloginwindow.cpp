@@ -7,17 +7,21 @@ AdminLogInWindow::AdminLogInWindow(QDialog *parent) :
 {
     ui->setupUi(this);
     ui->lineEditPassword->setEchoMode(QLineEdit::EchoMode::Password);
+    setWindowTitle(tr("Вход в приложение"));
+    setMinimumSize(QSize(640, 480));
 
     //TODO override exec, make acceptUser login
 
     connect(ui->pushButtonCancel, &QPushButton::clicked, [&]()
     {
+        setResult(DialogCode::Rejected);
         reject();
     });
 
     connect(ui->pushButtonUser, &QPushButton::clicked, [&]()
     {
-        emit acceptUser();
+        setResult(DialogCode::UserAccepted);
+        QDialog::done(DialogCode::UserAccepted);
     });
 
     connect(ui->pushButtonLogin, &QPushButton::clicked, [&]()
@@ -41,4 +45,14 @@ const QString &AdminLogInWindow::login() const
 const QString &AdminLogInWindow::password() const
 {
     return _password;
+}
+
+int AdminLogInWindow::exec()
+{
+    return QDialog::exec();
+}
+
+void AdminLogInWindow::acceptUser()
+{
+    setResult(DialogCode::UserAccepted);
 }

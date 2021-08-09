@@ -21,10 +21,11 @@ public:
     const QString &password() const;
 
 Q_SIGNALS:
-    void acceptUser();
+    void acceptedUser();
 
 public Q_SLOTS:
     virtual int exec() override;
+    void acceptUser();
 
 private:
     QString _login;
