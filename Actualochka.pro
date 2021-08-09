@@ -9,9 +9,9 @@ CONFIG += c++17
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 CONFIG(debug, debug|release) {
-    DESTDIR = $$OUT_PWD/../../ActualochkaDebug
+    DESTDIR = ../ActualochkaDebug
 } else {
-    DESTDIR = $$OUT_PWD/../../ActualochkaRelease
+    DESTDIR = ../ActualochkaRelease
 }
 
 OPENSSL = D:/Frameworks/Qt/Tools/OpenSSL/Win_x64/bin
@@ -30,21 +30,22 @@ win32 {
 
 TEMPLATE = app
 
-MOC_DIR = ../../common/build/moc
-RCC_DIR = ../../common/build/rcc
-UI_DIR =  ../../common/build/ui
+MOC_DIR = ../common/build/moc
+RCC_DIR = ../common/build/rcc
+UI_DIR =  ../common/build/ui
 
 CONFIG(debug, debug|release) {
-    QMAKE_POST_LINK += windeployqt $$OUT_PWD/../../ActualochkaDebug
+    QMAKE_POST_LINK += windeployqt ../ActualochkaDebug
 } else {
-    QMAKE_POST_LINK += windeployqt $$OUT_PWD/../../ActualochkaRelease
+    QMAKE_POST_LINK += windeployqt ../ActualochkaRelease
 }
 
-win32:OBJECTS_DIR = ../../common/build/o/win32
-macx:OBJECTS_DIR = ../../common/build/o/macx
-unix:OBJECTS_DIR = ../../common/build/o/unix
+win32:OBJECTS_DIR = ../common/build/o/win32
+macx:OBJECTS_DIR = ../common/build/o/macx
+unix:OBJECTS_DIR = ../common/build/o/unix
 
 SOURCES += \
+    src/adminloginwindow.cpp \
     src/calendardatehandler.cpp \
     src/contentfileio.cpp \
     src/main.cpp \
@@ -60,6 +61,7 @@ HEADERS += \
     include/General/configerexplorer.hpp \
     include/General/general.hpp \
     include/General/themechanger.hpp \
+    include/Mainwindow/adminloginwindow.hpp \
     include/Mainwindow/mainwindow.hpp \
     include/System/calendardatehandler.hpp \
     include/System/contentfileio.hpp \
@@ -70,6 +72,7 @@ HEADERS += \
     include/UI/switchbutton.hpp
 
 FORMS += \
+    ui/adminloginwindow.ui \
     ui/mainwindow.ui
 
 # Default rules for deployment.
