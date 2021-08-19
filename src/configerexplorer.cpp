@@ -1,9 +1,11 @@
 #include "include/General/configerexplorer.hpp"
 #include <QFile>
 
+ConfigerExplorer *ConfigerExplorer::_inst = nullptr;
+
 ConfigerExplorer::ConfigerExplorer(QObject *parent) : QObject(parent)
 {
-
+    ConfigerExplorer::_inst = this;
 }
 
 ConfigerExplorer::~ConfigerExplorer()
@@ -35,6 +37,7 @@ void ConfigerExplorer::OpenJsonConfig()
         (*_jsonObject)["notify"] = true;
         (*_jsonObject)["groupId"] = 12861;
         (*_jsonObject)["groupName"] = tr("40a-20");
+        (*_jsonObject)["remember"] = false;
         qInfo(logInfo()) << " [" << __FUNCTION__ << "] --- " << "Config was empty";
     }
     config.close();
@@ -65,6 +68,7 @@ void ConfigerExplorer::SaveConfigIntoFile()
         (*_jsonObject)["notify"]     = _cData.isNotifyEnable;
         (*_jsonObject)["groupId"]    =  QString::number(_cData.groupId).toStdString().c_str();
         (*_jsonObject)["groupName"]  = _cData.groupName.toStdString().c_str();
+        (*_jsonObject)["remember"]   = _cData.isRemember;
 
         config.write(QJsonDocument(*_jsonObject).toJson(QJsonDocument::Indented));
         config.close();
@@ -87,6 +91,7 @@ void ConfigerExplorer::HandleConfig()
     _cData.isDarkTheme      = (*_jsonObject)["dark-theme"].toBool();
     _cData.groupId          = QString((*_jsonObject)["groupId"].toString()).toUInt();
     _cData.groupName        = (*_jsonObject)["groupName"].toString();
+    _cData.isRemember       = (*_jsonObject)["remember"].toBool();
 
     /* for backward compatibility */
     if (_cData.groupId == 0)
@@ -94,6 +99,7 @@ void ConfigerExplorer::HandleConfig()
         _cData.groupId = 12861;
         _cData.groupName = tr("ИЭоз-40а-20");
         _cData.isDarkTheme = false;
+        _cData.isRemember = false;
     }
     AppRunsAdd();
 }
@@ -107,6 +113,7 @@ void ConfigerExplorer::SetDefaultConfig()
     _cData.isNotifyEnable   = true;
     _cData.groupId          = 12861;
     _cData.groupName        = tr("40a-20");
+    _cData.isRemember       = false;
     qInfo(logInfo()) << " [" << __FUNCTION__ << "] --- " << "Set up defaults parameters";
 }
 
@@ -143,6 +150,11 @@ bool ConfigerExplorer::isNotifyEnabled() const
 bool ConfigerExplorer::isDarkTheme() const
 {
     return _cData.isDarkTheme;
+}
+
+bool ConfigerExplorer::isRemember() const
+{
+    return _cData.isRemember;
 }
 
 quint32 ConfigerExplorer::GetGroupId() const
@@ -190,13 +202,17 @@ void ConfigerExplorer::SetDarkTheme(bool tDarkTheme)
     _cData.isDarkTheme = tDarkTheme;
 }
 
-QJsonObject ConfigerExplorer::GetLatestSchedule()
+void ConfigerExplorer::SetRemember(bool tSave)
 {
-    QFile config(act::ConfigPath);
-    if (!config.open(QIODevice::WriteOnly))
+    _cData.isRemember = tSave;
+}
+
+ConfigerExplorer *ConfigerExplorer::instance()
+{
+    if (_inst == nullptr)
     {
-        qCritical(logCritical()) << " [" << __FUNCTION__ << "] --- " << "Can't open config to get schedule";
+        _inst = new ConfigerExplorer();
     }
 
-    return QJsonObject();
+    return _inst;
 }

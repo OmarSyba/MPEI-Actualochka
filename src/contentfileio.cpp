@@ -90,8 +90,6 @@ void ContentFileIO::close()
     _contentFile->close();
 }
 
-// TODO
-
 QString ContentFileIO::getActualochka(QJsonObject tObj)
 {
     return tObj["Actualochka"].toString();

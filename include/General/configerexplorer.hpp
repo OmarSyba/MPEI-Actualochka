@@ -20,6 +20,7 @@ struct ConfigData
     QString groupName;
 
     bool isDarkTheme;
+    bool isRemember;
 };
 
 class ConfigerExplorer : public QObject
@@ -39,6 +40,7 @@ public:
     bool isAutoRunEnabled() const;
     bool isNotifyEnabled() const;
     bool isDarkTheme() const;
+    bool isRemember() const;
 
     quint32 GetGroupId() const;
     QString GetGroupName() const;
@@ -50,14 +52,16 @@ public:
     void SetGroupId(quint32 tId);
     void SetGroupName(QString& tName);
     void SetDarkTheme(bool tDarkTheme);
+    void SetRemember(bool tSave);
 
-    QJsonObject GetLatestSchedule();
+    static ConfigerExplorer *instance();
 
 private:
     void HandleConfig();
     void SetDefaultConfig();
 
 private:
+    static ConfigerExplorer *_inst;
     QJsonObject *_jsonObject = nullptr;
     ConfigData _cData;
 };

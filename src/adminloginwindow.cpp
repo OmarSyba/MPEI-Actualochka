@@ -1,4 +1,5 @@
 #include "include/Mainwindow/adminloginwindow.hpp"
+#include "include/General/configerexplorer.hpp"
 #include "ui_adminloginwindow.h"
 
 AdminLogInWindow::AdminLogInWindow(QDialog *parent) :
@@ -24,13 +25,21 @@ AdminLogInWindow::AdminLogInWindow(QDialog *parent) :
         QDialog::done(DialogCode::UserAccepted);
     });
 
+    //Need web request
     connect(ui->pushButtonLogin, &QPushButton::clicked, [&]()
     {
         _login = ui->lineEditLogin->text();
         _password = ui->lineEditPassword->text();
     });
-}
 
+    connect(ui->checkBoxRemember, &QCheckBox::stateChanged, [&](int state)
+    {
+        ConfigerExplorer *config = ConfigerExplorer::instance();
+        config->OpenJsonConfig();
+        config->SetRemember(state);
+        config->SaveConfigIntoFile();
+    });
+}
 
 AdminLogInWindow::~AdminLogInWindow()
 {
