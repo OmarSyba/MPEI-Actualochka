@@ -7,7 +7,7 @@
 #include <QTimer>
 #include <QSettings>
 
-//#define NORECIEVE
+#define NORECIEVE
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -28,7 +28,6 @@ MainWindow::~MainWindow()
     delete web;
     delete timer;
     delete sysTray;
-    delete config;
     delete ui;
 }
 
@@ -155,7 +154,7 @@ void MainWindow::onSysTrayActivated(QSystemTrayIcon::ActivationReason reason)
 
 void MainWindow::InitPrivateParameters()
 {
-    config = new ConfigerExplorer(this);
+    config = ConfigerExplorer::instance();
     config->OpenJsonConfig();
 
     if (config->isFirstRun())
@@ -226,7 +225,7 @@ void MainWindow::SetUpConnects()
     connect(sysTray->GetExitAction(), &QAction::triggered, this, [&]()
     {
         contentManager.saveContent(Content { ui->textEditActuallity->toPlainText(), content.ScheduleWeek, content.ScheduleMonth });
-        emit quitapp();
+        QApplication::instance()->quit();
     });
     qWarning(logWarning()) << " [" << __FUNCTION__ << "] --- " << "Close connect";
 
@@ -237,6 +236,14 @@ void MainWindow::SetUpConnects()
     });
 
     qWarning(logWarning()) << " [" << __FUNCTION__ << "] --- " << "Message clicked connect";
+
+    connect(ui->pushButtonExitProfile, &QPushButton::clicked, this, [&]()
+    {
+        config->SetRemember(false);
+
+        QApplication::instance()->quit();
+        QProcess::startDetached(QApplication::instance()->arguments()[0], QApplication::instance()->arguments());
+    });
 
     connect(ui->checkupdateButton, &QPushButton::clicked, this, [&]()
     {

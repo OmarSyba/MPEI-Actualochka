@@ -1,5 +1,6 @@
 #include "include/Mainwindow/mainwindow.hpp"
 #include "include/Mainwindow/adminloginwindow.hpp"
+#include "include/General/configerexplorer.hpp"
 
 #include <QProcess>
 #include <QStyleFactory>
@@ -99,21 +100,38 @@ int main(int argc, char *argv[])
     qInfo(logInfo()) << "\n\n\n\t\t*** Start Application at " << QDateTime::currentDateTime() << " ***\n";
     systemStyle();
 
-    AdminLogInWindow lw;
-    lw.setModal(true);
+    ConfigerExplorer config;
+    config.OpenJsonConfig();
+    qInfo(logInfo()) << " [" << __FUNCTION__ << "] --- " << "remember - " << config.isRemember();
 
-    if (lw.exec() == AdminLogInWindow::DialogCode::UserAccepted)
+    if (!config.isRemember())
     {
-        MainWindow w;
-        w.show();
-        QObject::connect(&w, &MainWindow::quitapp, &a, &QApplication::quit);
-        QObject::connect(&w, &MainWindow::newversion, [&]()
+        AdminLogInWindow lw;
+        lw.setModal(true);
+
+        if (lw.exec() == AdminLogInWindow::DialogCode::UserAccepted)
         {
-            QProcess P;
-            QString Path = QString(QDir().currentPath() + "/maintenancetool.exe");
-            P.start(Path);
-        });
-        return a.exec();
+            MainWindow w;
+            w.show();
+            QObject::connect(&w, &MainWindow::quitapp, &a, &QApplication::quit);
+            QObject::connect(&w, &MainWindow::newversion, [&]()
+            {
+                QProcess P;
+                QString Path = QString(QDir().currentPath() + "/maintenancetool.exe");
+                P.start(Path);
+            });
+            return a.exec();
+        }
     }
-    return 0;
+
+    MainWindow w;
+    w.show();
+    QObject::connect(&w, &MainWindow::quitapp, &a, &QApplication::quit);
+    QObject::connect(&w, &MainWindow::newversion, [&]()
+    {
+        QProcess P;
+        QString Path = QString(QDir().currentPath() + "/maintenancetool.exe");
+        P.start(Path);
+    });
+    return a.exec();
 }
