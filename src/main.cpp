@@ -1,5 +1,4 @@
 #include "include/Mainwindow/mainwindow.hpp"
-#include "include/Mainwindow/adminloginwindow.hpp"
 #include "include/General/configerexplorer.hpp"
 
 #include <QProcess>
@@ -100,33 +99,8 @@ int main(int argc, char *argv[])
     qInfo(logInfo()) << "\n\n\n\t\t*** Start Application at " << QDateTime::currentDateTime() << " ***\n";
     systemStyle();
 
-    ConfigerExplorer config;
-    config.OpenJsonConfig();
-    qInfo(logInfo()) << " [" << __FUNCTION__ << "] --- " << "remember - " << config.isRemember();
-
-    if (!config.isRemember())
-    {
-        AdminLogInWindow lw;
-        lw.setModal(true);
-
-        if (lw.exec() == AdminLogInWindow::DialogCode::UserAccepted)
-        {
-            MainWindow w;
-            w.show();
-            QObject::connect(&w, &MainWindow::quitapp, &a, &QApplication::quit);
-            QObject::connect(&w, &MainWindow::newversion, [&]()
-            {
-                QProcess P;
-                QString Path = QString(QDir().currentPath() + "/maintenancetool.exe");
-                P.start(Path);
-            });
-            return a.exec();
-        }
-    }
-
     MainWindow w;
     w.show();
-    QObject::connect(&w, &MainWindow::quitapp, &a, &QApplication::quit);
     QObject::connect(&w, &MainWindow::newversion, [&]()
     {
         QProcess P;

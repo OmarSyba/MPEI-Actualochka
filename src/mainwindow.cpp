@@ -1,4 +1,4 @@
-#include "../include/Mainwindow/mainwindow.hpp"
+#include "include/Mainwindow/mainwindow.hpp"
 #include "ui_mainwindow.h"
 
 #include <QDesktopServices>
@@ -45,6 +45,7 @@ void MainWindow::InitWindowParameters()
     ui->tabWidget->setCurrentIndex(0);
     ui->textEditSchedule->setReadOnly(true);
     ui->labelVersion->setText(act::CurrnetVersion);
+    ui->lineEditPassword->setEchoMode(QLineEdit::EchoMode::Password);
 }
 
 void MainWindow::keyPressEvent(QKeyEvent *event)
@@ -334,6 +335,13 @@ void MainWindow::ConnectOnlineSlots()
             }
         }
     });
+
+    connect(ui->pushButtonLoginProfile, &QPushButton::clicked, this, [&]()
+    {
+        QString login = ui->lineEditLogin->text();
+        QString password = ui->lineEditPassword->text();
+    });
+
     connect(timer->GetCurrentTimer(), &QTimer::timeout, this, &MainWindow::MakeReceive);
     connect(ui->UpdateButton, &QPushButton::clicked, this, &MainWindow::MakeReceive);
 }

@@ -12,6 +12,7 @@ class IActuallityHandler
 {
 public:
     virtual void makeRequest(std::initializer_list<QString> tList) = 0;
+    virtual void makeRequestProfile(QString tLogin, QString tPassword) = 0;
 };
 
 class UWebHandler : public QObject, public IActuallityHandler
@@ -22,6 +23,7 @@ public:
 
     QNetworkAccessManager* accsessUrl(QString url);
     void makeRequest(std::initializer_list<QString> tList) override;
+    void makeRequestProfile(QString tLogin, QString tPassword) override;
 
 public slots:
     void onResultActuallity(QNetworkReply *reply);

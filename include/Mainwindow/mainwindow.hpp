@@ -46,7 +46,6 @@ private:
     void ConnectOnlineSlots();
 
 signals:
-    void quitapp();
     void newversion();
 
 private:
