@@ -9,9 +9,9 @@ CONFIG += c++17
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 CONFIG(debug, debug|release) {
-    DESTDIR = ../ActualochkaDebug
+    DESTDIR = $${OUT_PWD}../../ActualochkaDebug
 } else {
-    DESTDIR = ../ActualochkaRelease
+    DESTDIR = $${OUT_PWD}../../ActualochkaRelease
 }
 
 OPENSSL = D:/Frameworks/Qt/Tools/OpenSSL/Win_x64/bin
@@ -35,9 +35,9 @@ RCC_DIR = ../common/build/rcc
 UI_DIR =  ../common/build/ui
 
 CONFIG(debug, debug|release) {
-    QMAKE_POST_LINK += windeployqt ../ActualochkaDebug
+    QMAKE_POST_LINK += windeployqt  $${OUT_PWD}../../ActualochkaDebug
 } else {
-    QMAKE_POST_LINK += windeployqt ../ActualochkaRelease
+    QMAKE_POST_LINK += windeployqt  $${OUT_PWD}../../ActualochkaRelease
 }
 
 win32:OBJECTS_DIR = ../common/build/o/win32
