@@ -38,15 +38,17 @@ public slots:
     void onSpinBoxValueChanged(int value);
     void onSysTrayActivated(QSystemTrayIcon::ActivationReason reason);
 
+    void onFieldsEdit();
+
 private:
     void InitPrivateParameters();
     void SetUpSettingsTab();
     void SetUpConnects();
     void MakeReceive();
     void ConnectOnlineSlots();
+    void ChangeMode(bool mode);
 
 signals:
-    void quitapp();
     void newversion();
 
 private:

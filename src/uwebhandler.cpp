@@ -33,6 +33,11 @@ void UWebHandler::makeRequest(std::initializer_list<QString> tList)
     qInfo(logInfo()) << " [" << __FUNCTION__ << "] --- " << list.at(1);
 }
 
+void UWebHandler::makeRequestProfile(QString tLogin, QString tPassword)
+{
+
+}
+
 void UWebHandler::onResultActuallity(QNetworkReply *reply)
 {
     qInfo(logInfo()) << " [" << __FUNCTION__ << "] --- " << "Get result actuallity";

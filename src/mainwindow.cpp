@@ -1,4 +1,4 @@
-#include "../include/Mainwindow/mainwindow.hpp"
+#include "include/Mainwindow/mainwindow.hpp"
 #include "ui_mainwindow.h"
 
 #include <QDesktopServices>
@@ -7,7 +7,7 @@
 #include <QTimer>
 #include <QSettings>
 
-//#define NORECIEVE
+#define NORECIEVE
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -28,7 +28,6 @@ MainWindow::~MainWindow()
     delete web;
     delete timer;
     delete sysTray;
-    delete config;
     delete ui;
 }
 
@@ -39,13 +38,55 @@ void MainWindow::InitWindowParameters()
     resize(QSize(640, 480));
     setMinimumSize(QSize(640, 480));
 
+    ui->textEdit->setText(tr("В разработке :c"));
+    ui->textEdit->setEnabled(false);
+
     ui->tabWidget->setTabText(0, tr("Информация"));
     ui->tabWidget->setTabText(1, tr("Настройки"));
     ui->tabWidget->setTabText(2, tr("Календарь"));
     ui->tabWidget->setTabText(3, tr("Конспекты"));
     ui->tabWidget->setCurrentIndex(0);
     ui->textEditSchedule->setReadOnly(true);
+    ui->textEditActuallity->setReadOnly(true);
     ui->labelVersion->setText(act::CurrnetVersion);
+    ui->lineEditPassword->setEchoMode(QLineEdit::EchoMode::Password);
+}
+
+void MainWindow::InitPrivateParameters()
+{
+    config = ConfigerExplorer::instance();
+    config->OpenJsonConfig();
+
+    if (config->isFirstRun())
+    {
+        config->SetDarkTheme(systemStyle() != 1);
+    }
+
+    sysTray = new USystemTray(this);
+    timer = new UTimerHandler(config->GetInterval());
+    web = new UWebHandler(this);
+
+    calendar = new CalendarDateHandler(ui->calendarWidget, ui->color1, ui->color2, ui->color3, config->isDarkTheme());
+    calendar->SetDarkTheme(config->isDarkTheme());
+    manager.subscribe(calendar);
+
+    SetUpSettingsTab();
+    setUpStyleApp(*static_cast<QApplication *>(QApplication::instance()), config->isDarkTheme());
+    SetUpConnects();
+    qInfo(logInfo()) << " [" << __FUNCTION__ << "] --- " << "Initial basic ptrs";
+}
+
+void MainWindow::SetUpSettingsTab()
+{
+    ui->checkBoxAutoRun->setChecked(config->isAutoRunEnabled());
+    ui->checkBoxNotify->setChecked(config->isNotifyEnabled());
+    ui->spinBoxInterval->setValue(config->GetInterval() / act::oneHour);
+    ui->spinBoxInterval->setReadOnly(!config->isNotifyEnabled());
+    ui->checkBoxDarkTheme->setChecked(config->isDarkTheme());
+    ui->pushButtonExitProfile->setEnabled(config->isRemember());
+    ui->pushButtonLoginProfile->setEnabled(false);
+
+    qInfo(logInfo()) << " [" << __FUNCTION__ << "] --- " << "Set up settings tab";
 }
 
 void MainWindow::keyPressEvent(QKeyEvent *event)
@@ -153,39 +194,9 @@ void MainWindow::onSysTrayActivated(QSystemTrayIcon::ActivationReason reason)
     }
 }
 
-void MainWindow::InitPrivateParameters()
+void MainWindow::onFieldsEdit()
 {
-    config = new ConfigerExplorer(this);
-    config->OpenJsonConfig();
-
-    if (config->isFirstRun())
-    {
-        config->SetDarkTheme(systemStyle() != 1);
-    }
-
-    sysTray = new USystemTray(this);
-    timer = new UTimerHandler(config->GetInterval());
-    web = new UWebHandler(this);
-
-    calendar = new CalendarDateHandler(ui->calendarWidget, ui->color1, ui->color2, ui->color3, config->isDarkTheme());
-    calendar->SetDarkTheme(config->isDarkTheme());
-    manager.subscribe(calendar);
-
-    SetUpSettingsTab();
-    setUpStyleApp(*static_cast<QApplication *>(QApplication::instance()), config->isDarkTheme());
-    SetUpConnects();
-    qInfo(logInfo()) << " [" << __FUNCTION__ << "] --- " << "Initial basic ptrs";
-}
-
-void MainWindow::SetUpSettingsTab()
-{
-    ui->checkBoxAutoRun->setChecked(config->isAutoRunEnabled());
-    ui->checkBoxNotify->setChecked(config->isNotifyEnabled());
-    ui->spinBoxInterval->setValue(config->GetInterval() / act::oneHour);
-    ui->spinBoxInterval->setReadOnly(!config->isNotifyEnabled());
-    ui->checkBoxDarkTheme->setChecked(config->isDarkTheme());
-
-    qInfo(logInfo()) << " [" << __FUNCTION__ << "] --- " << "Set up settings tab";
+    ui->pushButtonLoginProfile->setEnabled(!ui->lineEditLogin->text().isEmpty() && !ui->lineEditPassword->text().isEmpty());
 }
 
 void MainWindow::onResultCheckForUpdate(QNetworkReply *reply)
@@ -225,8 +236,8 @@ void MainWindow::SetUpConnects()
 
     connect(sysTray->GetExitAction(), &QAction::triggered, this, [&]()
     {
-        contentManager.saveContent(Content { ui->textEditActuallity->toPlainText(), content.ScheduleWeek, content.ScheduleMonth});
-        emit quitapp();
+        contentManager.saveContent(Content { ui->textEditActuallity->toPlainText(), content.ScheduleWeek, content.ScheduleMonth });
+        QApplication::instance()->quit();
     });
     qWarning(logWarning()) << " [" << __FUNCTION__ << "] --- " << "Close connect";
 
@@ -238,6 +249,15 @@ void MainWindow::SetUpConnects()
 
     qWarning(logWarning()) << " [" << __FUNCTION__ << "] --- " << "Message clicked connect";
 
+    connect(ui->pushButtonExitProfile, &QPushButton::clicked, this, [&]()
+    {
+        contentManager.saveContent(Content { ui->textEditActuallity->toPlainText(), content.ScheduleWeek, content.ScheduleMonth });
+        config->SetRemember(false);
+        config->SaveConfigIntoFile();
+        QApplication::instance()->quit();
+        QProcess::startDetached(QApplication::instance()->arguments()[0], QApplication::instance()->arguments());
+    });
+
     connect(ui->checkupdateButton, &QPushButton::clicked, this, [&]()
     {
         auto namVersion = web->accsessUrl(act::MpeiVersion);
@@ -247,6 +267,8 @@ void MainWindow::SetUpConnects()
     qWarning(logWarning()) << " [" << __FUNCTION__ << "] --- " << "Version update connect";
 
     connect(sysTray, &QSystemTrayIcon::activated, this, &MainWindow::onSysTrayActivated);
+    connect(ui->lineEditLogin, &QLineEdit::textChanged, this, &MainWindow::onFieldsEdit);
+    connect(ui->lineEditPassword, &QLineEdit::textChanged, this, &MainWindow::onFieldsEdit);
     connect(ui->checkBoxAutoRun, SIGNAL(stateChanged(int)), this, SLOT(onAutoRunChanged(int)));
     connect(ui->checkBoxNotify, SIGNAL(stateChanged(int)), this, SLOT(onNotifyChanged(int)));
     connect(ui->pushButtonSave, &QPushButton::clicked, this, [&]() { config->SaveConfigIntoFile(); });
@@ -327,6 +349,32 @@ void MainWindow::ConnectOnlineSlots()
             }
         }
     });
+
+    connect(ui->pushButtonLoginProfile, &QPushButton::clicked, this, [&]()
+    {
+        QString login = ui->lineEditLogin->text();
+        QString password = ui->lineEditPassword->text();
+
+        /* ***************** testing **************/
+        if (login == "admin" && password == "admin")
+        {
+            ChangeMode(true);
+        }
+    });
+
     connect(timer->GetCurrentTimer(), &QTimer::timeout, this, &MainWindow::MakeReceive);
     connect(ui->UpdateButton, &QPushButton::clicked, this, &MainWindow::MakeReceive);
+}
+
+void MainWindow::ChangeMode(bool mode)
+{
+    ui->textEditActuallity->setReadOnly(!mode);
+
+    ui->lineEditLogin->clear();
+    ui->lineEditPassword->clear();
+    ui->lineEditLogin->setDisabled(mode);
+    ui->lineEditPassword->setDisabled(mode);
+
+    ui->pushButtonLoginProfile->setEnabled(!mode);
+    ui->pushButtonExitProfile->setEnabled(mode);
 }

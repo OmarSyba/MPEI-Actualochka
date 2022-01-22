@@ -1,5 +1,5 @@
 #include "include/Mainwindow/mainwindow.hpp"
-#include "include/General/general.hpp"
+#include "include/General/configerexplorer.hpp"
 
 #include <QProcess>
 #include <QStyleFactory>
@@ -100,13 +100,12 @@ int main(int argc, char *argv[])
     systemStyle();
 
     MainWindow w;
-    QObject::connect(&w, &MainWindow::quitapp, &a, &QApplication::quit);
+    w.show();
     QObject::connect(&w, &MainWindow::newversion, [&]()
     {
         QProcess P;
         QString Path = QString(QDir().currentPath() + "/maintenancetool.exe");
         P.start(Path);
     });
-
     return a.exec();
 }
